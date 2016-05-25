@@ -285,22 +285,12 @@ public class MainActivity extends AppCompatActivity
             if (resultCode == RESULT_OK) {
 
 
-                if(debug) {
-                    // Video captured and saved to fileUri specified in the Intent
-                    Toast.makeText(this, "Video saved to:\n" +
-                            data.getData(), Toast.LENGTH_LONG).show();
-                }
-
                 // refresh current position
                 onStart();
 
                 if (location != null) {
                     double lat = location.getLatitude();
                     double lon = location.getLongitude();
-
-                    if(debug) {
-                        Toast.makeText(MainActivity.this, "saving: " + data.getData() + " AS " + lat+ ":" + lon, Toast.LENGTH_SHORT).show();
-                    }
 
                     if(uriMap == null) {
                         uriMap = new HashMap<>();

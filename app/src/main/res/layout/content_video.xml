@@ -4,10 +4,13 @@
     android:layout_width="fill_parent"
     android:background="@color/colorPrimary"
     android:layout_height="fill_parent"
+    android:clickable="true"
+    android:id="@+id/videoBack"
     android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
     <VideoView
         android:id="@+id/videoView"
+        android:clickable="true"
         android:layout_width="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"

@@ -4,9 +4,12 @@ import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -19,6 +22,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -30,7 +36,7 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMarkerClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
     private boolean debug = true;
@@ -40,7 +46,13 @@ public class MainActivity extends AppCompatActivity
     private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 
-    // google maps stuff
+    // client for handling calls to the google play services api
+    private GoogleApiClient apiClient;
+
+    // location of the device
+    private Location location;
+
+    // google maps
     private GoogleMap map;
     private MapFragment mMapFragment;
 
@@ -51,19 +63,31 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        initGooglePlayServices();
+
         createMap();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                enableMyLocation();
                 requestCamera();
 
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
             }
         });
+    }
+
+    public void initGooglePlayServices() {
+        // Create an instance of GoogleAPIClient.
+        if (apiClient == null) {
+            apiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
     }
 
 
@@ -87,7 +111,7 @@ public class MainActivity extends AppCompatActivity
         // mapHandler = new MapHandler(map, this, jobsModel);
 
         map.setOnMyLocationButtonClickListener(this);
-        enableMyLocation();
+        requestLocation();
 
         // map.setOnMapClickListener(mapHandler);
         // map.setOnMapLongClickListener(mapHandler);
@@ -146,7 +170,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Enables the My Location layer if the fine location permission has been granted.
      */
-    private void enableMyLocation() {
+    private void requestLocation() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -165,6 +189,10 @@ public class MainActivity extends AppCompatActivity
 
             }
 
+        } else {
+
+            // sets location
+            location = LocationServices.FusedLocationApi.getLastLocation(apiClient);
         }
     }
 
@@ -179,14 +207,14 @@ public class MainActivity extends AppCompatActivity
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission granted
-                    Toast.makeText(MainActivity.this, "Permission granted :>", Toast.LENGTH_SHORT).show();
+                    // retry ..
+                    requestLocation();
 
                 } else {
 
                     // permission denied
                     // permission granted
-                    Toast.makeText(MainActivity.this, "Permission denied :<", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Location is needed to post videos :<", Toast.LENGTH_SHORT).show();
 
                 }
                 return;
@@ -221,9 +249,18 @@ public class MainActivity extends AppCompatActivity
 
         if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                // Video captured and saved to fileUri specified in the Intent
-                Toast.makeText(this, "Video saved to:\n" +
-                        data.getData(), Toast.LENGTH_LONG).show();
+
+
+                if(debug) {
+                    // Video captured and saved to fileUri specified in the Intent
+                    Toast.makeText(this, "Video saved to:\n" +
+                            data.getData(), Toast.LENGTH_LONG).show();
+                }
+                
+                // todo add marker to map with location
+                onStart();
+
+
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the video capture
             } else {
@@ -263,5 +300,58 @@ public class MainActivity extends AppCompatActivity
         // todo show video of marker
 
         return false;
+    }
+
+
+    /**
+     * Starts the connection to google play services
+     */
+    protected void onStart() {
+        apiClient.connect();
+        super.onStart();
+    }
+
+    /**
+     * Stops the connection to google play services
+     */
+    protected void onStop() {
+        apiClient.disconnect();
+        super.onStop();
+    }
+
+
+    /**
+     * Response from onStart()
+     */
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+        // gets the last known position for the device
+        requestLocation();
+
+        if (location != null) {
+            String lat = String.valueOf(location.getLatitude());
+            String lon = String.valueOf(location.getLongitude());
+
+            if(debug) {
+                Toast.makeText(MainActivity.this, "lat: " + lat + "\n long: " + lon, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
+     * Response from onStop() or whenever connection is closed
+     */
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+        if(debug) {
+            Toast.makeText(MainActivity.this, "Connection refused :<", Toast.LENGTH_SHORT).show();
+        }
     }
 }

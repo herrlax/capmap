@@ -74,6 +74,9 @@ public class MainActivity extends AppCompatActivity
     // Maps with all uris and latlongs
     private Map<String, Uri> uriMap;
 
+    // fragment for displaying video
+    VideoFragment videoFragment = new VideoFragment();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -367,13 +370,14 @@ public class MainActivity extends AppCompatActivity
 
         } else {
 
-            VideoView videoView = (VideoView)findViewById(R.id.videoView);
+            videoFragment.setVideoUri(uri);
 
-            String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
-            Uri vidUri = Uri.parse(uri.toString());
+            FragmentTransaction transaction;
 
-            videoView.setVideoURI(vidUri);
-            videoView.start();
+            transaction = this.getFragmentManager().beginTransaction();
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
+            transaction.commit();
 
         }
 

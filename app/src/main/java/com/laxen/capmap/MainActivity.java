@@ -122,9 +122,20 @@ public class MainActivity extends AppCompatActivity
 
             }
 
+        } else {
+            startCamera();
         }
     }
 
+    public void startCamera() {
+        //create new Intent
+        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+
+        // start the Video Capture Intent
+        startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+    }
 
     @Override
     public boolean onMyLocationButtonClick() {
@@ -185,13 +196,7 @@ public class MainActivity extends AppCompatActivity
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    //create new Intent
-                    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
-                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
-
-                    // start the Video Capture Intent
-                    startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+                    startCamera();
 
                 } else {
 
@@ -207,6 +212,26 @@ public class MainActivity extends AppCompatActivity
             // permissions this app might request
         }
     }
+
+    /**
+     * Receiving the recorded footage
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Video captured and saved to fileUri specified in the Intent
+                Toast.makeText(this, "Video saved to:\n" +
+                        data.getData(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // User cancelled the video capture
+            } else {
+                // Video capture failed, advise user
+            }
+        }
+    }
+
 
     //  map.setMyLocationEnabled(true);
 

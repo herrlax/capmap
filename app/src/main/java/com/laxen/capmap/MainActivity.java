@@ -3,6 +3,7 @@ package com.laxen.capmap;
 import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -33,7 +34,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -74,6 +79,8 @@ public class MainActivity extends AppCompatActivity
 
     // fragment for displaying video
     VideoFragment videoFragment = new VideoFragment();
+
+    private final String PREFS_NAME = "SAVED_VIDEOS";
 
 
     @Override
@@ -142,6 +149,8 @@ public class MainActivity extends AppCompatActivity
             LatLng SWEDEN = new LatLng(62.2315, 16.1932);
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(SWEDEN, 4.5f));
         }
+
+        loadLocalData();
 
     }
 
@@ -371,9 +380,10 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     // stores the video to map
-                    uriMap.put(lat+ ":" + lon, data.getData());
+                    uriMap.put(lat+ ";" + lon, data.getData());
+                    saveLocally(lat+ ";" + lon + ";" + data.getData().toString());
 
-                    map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ":" + lon));
+                    map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ";" + lon));
                 }
 
             } else if (resultCode == RESULT_CANCELED) {
@@ -382,6 +392,60 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this, "Video capture failed", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public void saveLocally(String latlongVid){
+
+        // saves coordinates and file pointers locally
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+
+        // retrieves locally stored data
+        Set<String> savedStrings = settings.getStringSet("videos", new HashSet<String>());
+
+
+        Set<String> newStrings = new HashSet<>();
+
+        // adds the saved data to a new string set
+        for(String str : savedStrings) {
+            newStrings.add(str);
+        }
+
+        // finally adds the new one to the string set
+        newStrings.add(latlongVid);
+
+
+        Log.d("app", "stored : " + newStrings.toString());
+        editor.putStringSet("videos", newStrings);
+        editor.commit();
+
+    }
+
+
+    // loads local data and populates map
+    public void loadLocalData() {
+
+        // saves coordinates and file pointers locally
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+        Set<String> savedStrings = settings.getStringSet("videos", new HashSet<String>());
+
+        for(String str : savedStrings) {
+
+            String[] strs = str.split(";");
+
+            if(strs.length == 3) {
+
+                double lat = Double.parseDouble(strs[0]);
+                double lon = Double.parseDouble(strs[1]);
+                Uri uri = Uri.parse(strs[2]);
+
+                uriMap.put(lat+ ";" + lon, uri);
+
+                map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ";" + lon));
+            }
+        }
+
     }
 
 

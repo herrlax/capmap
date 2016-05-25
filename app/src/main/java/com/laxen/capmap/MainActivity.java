@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity
 
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
+    private final int MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE = 3;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 
     // client for handling calls to the google play services api
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity
 
     // location of the device
     private Location location;
+
+    // last clicked location
+    private String locationString;
 
     // google maps
     private GoogleMap map;
@@ -231,6 +235,61 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Enables the writing of external storage
+     */
+    private void requestRead() {
+
+        Log.e("app", "requesting location");
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+                // if the user has denied the permission before
+
+                // request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE);
+
+            } else {
+
+                // request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE);
+
+            }
+
+        } else {
+
+            // if permission is granted
+            Uri uri = uriMap.get(locationString);
+
+            if(uri == null) {
+
+                if (debug) {
+                    Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
+                }
+
+            } else {
+
+                videoFragment.setVideoUri(uri);
+
+                FragmentTransaction transaction;
+
+                transaction = this.getFragmentManager().beginTransaction();
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
+                transaction.commit();
+
+            }
+        }
+    }
+
 
     // Handles all permissions
     @Override
@@ -269,7 +328,22 @@ public class MainActivity extends AppCompatActivity
                 }
                 return;
             }
+            case MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
+                    requestRead();
+
+                } else {
+
+                    // permission denied
+                    // permission granted
+                    Toast.makeText(MainActivity.this, "Function requires access to external storage", Toast.LENGTH_LONG).show();
+
+                }
+                return;
+            }
             // other 'case' lines to check for other
             // permissions this app might request
         }
@@ -339,31 +413,11 @@ public class MainActivity extends AppCompatActivity
     public boolean onMarkerClick(Marker marker) {
 
         // gets the locationString of the marker (i.e the title)
-        String locationString = marker.getTitle();
+        locationString = marker.getTitle();
+
 
         // gets uri from location
-        Uri uri = uriMap.get(locationString);
-
-        if(uri == null) {
-
-            if (debug) {
-                Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
-            }
-
-        } else {
-
-            videoFragment.setVideoUri(uri);
-
-            FragmentTransaction transaction;
-
-            transaction = this.getFragmentManager().beginTransaction();
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
-            transaction.commit();
-
-        }
-
-        // todo show video from uri
+        requestRead();
 
         return false;
     }

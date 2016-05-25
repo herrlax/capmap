@@ -18,10 +18,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -42,7 +45,7 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        GoogleMap.OnMarkerClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        GoogleMap.OnMarkerClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SurfaceHolder.Callback {
 
 
     private boolean debug = true;
@@ -364,20 +367,14 @@ public class MainActivity extends AppCompatActivity
 
         } else {
 
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            VideoView videoView = (VideoView)findViewById(R.id.videoView);
 
-            try {
-                mediaPlayer.setDataSource(getApplicationContext(), uri);
-                mediaPlayer.prepare();
+            String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
+            Uri vidUri = Uri.parse(uri.toString());
 
-            } catch (IOException e) {
-                if (debug) {
-                    Toast.makeText(MainActivity.this, "Something gross just happened..", Toast.LENGTH_SHORT).show();
-                }
-            }
+            videoView.setVideoURI(vidUri);
+            videoView.start();
 
-            mediaPlayer.start();
         }
 
         // todo show video from uri
@@ -431,5 +428,20 @@ public class MainActivity extends AppCompatActivity
         if(debug) {
             Toast.makeText(MainActivity.this, "Connection refused :<", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
     }
 }

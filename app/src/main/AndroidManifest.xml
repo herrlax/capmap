@@ -19,6 +19,9 @@
     <!-- permission for recording audio -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- permission for keeping screen awake -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
 
     <application
         android:allowBackup="true"

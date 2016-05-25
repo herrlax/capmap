@@ -5,12 +5,12 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +31,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -56,6 +59,16 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap map;
     private MapFragment mMapFragment;
 
+    // Util class for storing data on device
+    private MediaSaver saver;
+
+    // captured video to be added to map
+    private Uri videoUri;
+
+    // Maps with all uris and latlongs
+    private Map<String, Uri> uriMap;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +90,9 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();*/
             }
         });
+
+        saver = new MediaSaver();
+        uriMap = new HashMap<>();
     }
 
     public void initGooglePlayServices() {
@@ -161,6 +177,12 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
         intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+
+        if(saver == null ) {
+            saver = new MediaSaver();
+        }
+
+        videoUri = saver.getOutputMediaFileUri(saver.MEDIA_TYPE_VIDEO);
 
         // start the Video Capture Intent
         startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
@@ -253,7 +275,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Receiving the recorded footage
+     * Receiving the recorded footage now stored in videoUri
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -279,7 +301,14 @@ public class MainActivity extends AppCompatActivity
                         Toast.makeText(MainActivity.this, "lat: " + lat + "\n long: " + lon, Toast.LENGTH_SHORT).show();
                     }
 
-                    addMarker(new LatLng(lat, lon));
+                    if(uriMap == null) {
+                        uriMap = new HashMap<>();
+                    }
+
+                    // stores the video to map
+                    uriMap.put(location.toString(), videoUri);
+
+                    map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(location.toString()));
                 }
 
             } else if (resultCode == RESULT_CANCELED) {
@@ -318,7 +347,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        // todo show video of marker
+        // gets the locationString of the marker (i.e the title)
+        String locationString = marker.getTitle();
+
+        // gets uri from location
+        Uri uri = uriMap.get(locationString);
+
+
+        // todo show video from uri
 
         return false;
     }
@@ -353,11 +389,6 @@ public class MainActivity extends AppCompatActivity
         // gets the last known position for the device
         requestLocation();
 
-    }
-
-    public void addMarker(LatLng point) {
-
-        Marker m = map.addMarker(new MarkerOptions().position(point).title(point.toString()));
     }
 
     /**

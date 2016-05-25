@@ -31,6 +31,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -111,6 +112,8 @@ public class MainActivity extends AppCompatActivity
         // mapHandler = new MapHandler(map, this, jobsModel);
 
         map.setOnMyLocationButtonClickListener(this);
+        map.setOnMarkerClickListener(this);
+
         requestLocation();
 
         // map.setOnMapClickListener(mapHandler);
@@ -256,15 +259,14 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(this, "Video saved to:\n" +
                             data.getData(), Toast.LENGTH_LONG).show();
                 }
-                
-                // todo add marker to map with location
-                onStart();
 
+                // refresh current position
+                onStart();
 
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the video capture
             } else {
-                // Video capture failed, advise user
+                Toast.makeText(MainActivity.this, "Video capture failed", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -330,13 +332,20 @@ public class MainActivity extends AppCompatActivity
         requestLocation();
 
         if (location != null) {
-            String lat = String.valueOf(location.getLatitude());
-            String lon = String.valueOf(location.getLongitude());
+            double lat = location.getLatitude();
+            double lon = location.getLongitude();
 
             if(debug) {
                 Toast.makeText(MainActivity.this, "lat: " + lat + "\n long: " + lon, Toast.LENGTH_SHORT).show();
             }
+
+            addMarker(new LatLng(lat, lon));
         }
+    }
+
+    public void addMarker(LatLng point) {
+
+        Marker m = map.addMarker(new MarkerOptions().position(point).title(point.toString()));
     }
 
     /**

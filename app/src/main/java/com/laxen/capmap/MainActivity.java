@@ -5,6 +5,8 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -32,6 +34,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -298,7 +301,7 @@ public class MainActivity extends AppCompatActivity
                     double lon = location.getLongitude();
 
                     if(debug) {
-                        Toast.makeText(MainActivity.this, "lat: " + lat + "\n long: " + lon, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "saving: " + data.getData() + " AS " + lat+ ":" + lon, Toast.LENGTH_SHORT).show();
                     }
 
                     if(uriMap == null) {
@@ -306,9 +309,9 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     // stores the video to map
-                    uriMap.put(location.toString(), videoUri);
+                    uriMap.put(lat+ ":" + lon, data.getData());
 
-                    map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(location.toString()));
+                    map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ":" + lon));
                 }
 
             } else if (resultCode == RESULT_CANCELED) {
@@ -353,6 +356,29 @@ public class MainActivity extends AppCompatActivity
         // gets uri from location
         Uri uri = uriMap.get(locationString);
 
+        if(uri == null) {
+
+            if (debug) {
+                Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
+            }
+
+        } else {
+
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+            try {
+                mediaPlayer.setDataSource(getApplicationContext(), uri);
+                mediaPlayer.prepare();
+
+            } catch (IOException e) {
+                if (debug) {
+                    Toast.makeText(MainActivity.this, "Something gross just happened..", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            mediaPlayer.start();
+        }
 
         // todo show video from uri
 

@@ -2,8 +2,11 @@ package com.laxen.capmap;
 
 import android.Manifest;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -34,7 +37,8 @@ public class MainActivity extends AppCompatActivity
 
 
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-
+    private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
+    private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 
     // google maps stuff
     private GoogleMap map;
@@ -54,11 +58,14 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 enableMyLocation();
+                requestCamera();
+
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
             }
         });
     }
+
 
     public void createMap() {
 
@@ -93,6 +100,31 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Enables the My Location layer if the fine location permission has been granted.
+     */
+    private void requestCamera() {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+
+                // waiting for response
+
+            } else {
+
+                // request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_ACCESS_CAMERA);
+
+            }
+
+        }
+    }
+
 
     @Override
     public boolean onMyLocationButtonClick() {
@@ -109,7 +141,7 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED) {
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_CONTACTS)) {
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
 
                 // waiting for response
 
@@ -144,6 +176,28 @@ public class MainActivity extends AppCompatActivity
                     // permission denied
                     // permission granted
                     Toast.makeText(MainActivity.this, "Permission denied :<", Toast.LENGTH_SHORT).show();
+
+                }
+                return;
+            }
+            case MY_PERMISSIONS_REQUEST_ACCESS_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    //create new Intent
+                    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+
+                    // start the Video Capture Intent
+                    startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+
+                } else {
+
+                    // permission denied
+                    // permission granted
+                    Toast.makeText(MainActivity.this, "Function requires camera", Toast.LENGTH_SHORT).show();
 
                 }
                 return;

@@ -8,6 +8,18 @@
     <!-- permission for internet connection -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <!-- permission for using camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <user-permission android:name="android.hardware.camera" />
+    <user-permission android:name="android.hardware.camera.front" />
+
+    <!-- permission for storing data -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!-- permission for recording audio -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

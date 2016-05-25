@@ -5,7 +5,6 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -114,8 +113,6 @@ public class MainActivity extends AppCompatActivity
         map.setOnMyLocationButtonClickListener(this);
         map.setOnMarkerClickListener(this);
 
-        requestLocation();
-
         // map.setOnMapClickListener(mapHandler);
         // map.setOnMapLongClickListener(mapHandler);
 
@@ -138,7 +135,12 @@ public class MainActivity extends AppCompatActivity
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
 
-                // waiting for response
+                // if the user has denied the permission before
+
+                // request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_ACCESS_CAMERA);
 
             } else {
 
@@ -175,13 +177,20 @@ public class MainActivity extends AppCompatActivity
      */
     private void requestLocation() {
 
+        Log.e("app", "requesting location");
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                // waiting for response
+                // if the user has denied the permission before
+
+                // request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
 
             } else {
 
@@ -216,7 +225,6 @@ public class MainActivity extends AppCompatActivity
                 } else {
 
                     // permission denied
-                    // permission granted
                     Toast.makeText(MainActivity.this, "Location is needed to post videos :<", Toast.LENGTH_SHORT).show();
 
                 }
@@ -262,6 +270,17 @@ public class MainActivity extends AppCompatActivity
 
                 // refresh current position
                 onStart();
+
+                if (location != null) {
+                    double lat = location.getLatitude();
+                    double lon = location.getLongitude();
+
+                    if(debug) {
+                        Toast.makeText(MainActivity.this, "lat: " + lat + "\n long: " + lon, Toast.LENGTH_SHORT).show();
+                    }
+
+                    addMarker(new LatLng(lat, lon));
+                }
 
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the video capture
@@ -309,6 +328,7 @@ public class MainActivity extends AppCompatActivity
      * Starts the connection to google play services
      */
     protected void onStart() {
+        Log.e("app", "onStart()");
         apiClient.connect();
         super.onStart();
     }
@@ -328,19 +348,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
+        Log.e("app", "connected: ");
+
         // gets the last known position for the device
         requestLocation();
 
-        if (location != null) {
-            double lat = location.getLatitude();
-            double lon = location.getLongitude();
-
-            if(debug) {
-                Toast.makeText(MainActivity.this, "lat: " + lat + "\n long: " + lon, Toast.LENGTH_SHORT).show();
-            }
-
-            addMarker(new LatLng(lat, lon));
-        }
     }
 
     public void addMarker(LatLng point) {

@@ -22,6 +22,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -151,6 +153,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         loadLocalData();
+        fetchData();
 
     }
 
@@ -421,6 +424,12 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
+    // fetches data from server
+    public void fetchData() {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://www.google.com";
+    }
 
     // loads local data and populates map
     public void loadLocalData() {

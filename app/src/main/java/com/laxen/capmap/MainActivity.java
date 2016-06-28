@@ -474,7 +474,10 @@ public class MainActivity extends AppCompatActivity
                     for(VideoItem item : jsonArrayToObjects(array)){
                         Log.d("app", item.toString());
                     }
-                    
+
+                    // adds the dummy data to map
+                    addToMap(jsonArrayToObjects(array));
+
                     // adds the fetched data to map
                     /*for(VideoItem item : jsonArrayToObjects(response)){
                         Log.d("app", item.toString());
@@ -515,27 +518,20 @@ public class MainActivity extends AppCompatActivity
         return set;
     }
 
-    // converts a jsonArray to an ArrayList
-    /*public Set<String> jsonArrayToSet(JSONArray jsonArray) {
+    // adds a set of video items to the map as markers
+    public void addToMap(Set<VideoItem> items) {
 
-        Set<String> set = new HashSet<>();
+        for(VideoItem item : items) {
 
-        if (jsonArray != null) {
+            // todo add to urimap
 
-            for (int i=0; i<jsonArray.length(); i++){
-
-                try {
-                    set.add(jsonArray.get(i).toString());
-                } catch (JSONException e) {
-
-                    Log.e("app", e.getMessage());
-                }
-            }
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(item.getLat(), item.getLon()))
+                    .title(item.getLat()+ ";" + item.getLon()));
         }
+    }
 
-        return set;
-    }*/
-
+    // todo remove this method
     public void addMarkersToMap(Set<String> data) {
 
         for(String str : data) {

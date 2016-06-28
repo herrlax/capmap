@@ -4,25 +4,25 @@ package com.laxen.capmap.utils;
  * Created by laxen on 6/28/16.
  */
 public class VideoItem {
-    private Integer lat, lon;
+    private Double lat, lon;
     private String videoUrl;
 
     public VideoItem() {
 
     }
 
-    public VideoItem(Integer lat, Integer lon, String videoUrl) {
+    public VideoItem(Double lat, Double lon, String videoUrl) {
         this.lat = lat;
         this.lon = lon;
         this.videoUrl = videoUrl;
     }
 
 
-    public Integer getLat() {
+    public Double getLat() {
         return lat;
     }
 
-    public Integer getLon() {
+    public Double getLon() {
         return lon;
     }
 

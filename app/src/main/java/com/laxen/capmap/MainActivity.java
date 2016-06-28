@@ -41,6 +41,7 @@ import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
@@ -443,12 +444,41 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onResponse(JSONArray response) {
 
+                    Log.d("app", response.toString());
 
+                    JSONObject json1 = new JSONObject();
+                    JSONObject json2 = new JSONObject();
+                    JSONObject json3 = new JSONObject();
 
-                    // adds the fetched data to map
-                    for(VideoItem item : jsonArrayToObjects(response)){
+                    try {
+                        json1.put("lat", "51.5074");
+                        json1.put("lon", "0.1278");
+
+                        json2.put("lat", "50.8225");
+                        json2.put("lon", "0.1372");
+
+                        json3.put("lat", "39.9607");
+                        json3.put("lon", "75.6055");
+
+                    } catch (JSONException e) {
+
+                    }
+
+                    JSONArray array = new JSONArray();
+
+                    array.put(json1);
+                    array.put(json2);
+                    array.put(json3);
+
+                    // adds the dummy data to map
+                    for(VideoItem item : jsonArrayToObjects(array)){
                         Log.d("app", item.toString());
                     }
+                    
+                    // adds the fetched data to map
+                    /*for(VideoItem item : jsonArrayToObjects(response)){
+                        Log.d("app", item.toString());
+                    }*/
                 }
 
             }, new Response.ErrorListener() {

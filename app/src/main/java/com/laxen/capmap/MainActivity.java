@@ -22,8 +22,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -34,13 +36,18 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.laxen.capmap.network.RequestHandler;
+import com.laxen.capmap.utils.VideoItem;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -427,21 +434,84 @@ public class MainActivity extends AppCompatActivity
 
     // fetches data from server
     public void fetchData() {
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://www.google.com";
+
+        String url = "http://jsonplaceholder.typicode.com/todos";
+
+        JsonArrayRequest jsObjRequest = new JsonArrayRequest
+            (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+
+                @Override
+                public void onResponse(JSONArray response) {
+
+
+
+                    // adds the fetched data to map
+                    for(VideoItem item : jsonArrayToObjects(response)){
+                        Log.d("app", item.toString());
+                    }
+                }
+
+            }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(MainActivity.this, "Volley didn't work", Toast.LENGTH_SHORT).show();
+
+                }
+            });
+
+
+        // Access the RequestQueue through your singleton class.
+        RequestHandler.getInstance(this).addToRequestQueue(jsObjRequest);
     }
 
-    // loads local data and populates map
-    public void loadLocalData() {
+    public Set<VideoItem> jsonArrayToObjects(JSONArray jsonArray) {
 
-        // saves coordinates and file pointers locally
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        Set<VideoItem> set = new HashSet<>();
+        Gson gson = new Gson();
 
-        Set<String> savedStrings = settings.getStringSet("videos", new HashSet<String>());
 
-        for(String str : savedStrings) {
+        for (int i=0; i<jsonArray.length(); i++) {
 
-            String[] strs = str.split(";");
+            try{
+                VideoItem videoItem = gson.fromJson(jsonArray.get(i).toString(), VideoItem.class);
+                set.add(videoItem);
+            } catch (JSONException e) {
+                Log.e("app", e.getMessage());
+            }
+
+        }
+
+        return set;
+    }
+
+    // converts a jsonArray to an ArrayList
+    /*public Set<String> jsonArrayToSet(JSONArray jsonArray) {
+
+        Set<String> set = new HashSet<>();
+
+        if (jsonArray != null) {
+
+            for (int i=0; i<jsonArray.length(); i++){
+
+                try {
+                    set.add(jsonArray.get(i).toString());
+                } catch (JSONException e) {
+
+                    Log.e("app", e.getMessage());
+                }
+            }
+        }
+
+        return set;
+    }*/
+
+    public void addMarkersToMap(Set<String> data) {
+
+        for(String str : data) {
+            Log.d("app", str);
+
+            /*String[] strs = str.split(";");
 
             if(strs.length == 3) {
 
@@ -452,10 +522,23 @@ public class MainActivity extends AppCompatActivity
                 uriMap.put(lat+ ";" + lon, uri);
 
                 map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ";" + lon));
-            }
+            }*/
         }
-
     }
+
+    // loads local data and populates map
+    public void loadLocalData() {
+
+        // saves coordinates and file pointers locally
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+        Set<String> savedStrings = settings.getStringSet("videos", new HashSet<String>());
+
+        // adds local data to map
+        addMarkersToMap(savedStrings);
+    }
+
+
 
 
     //  map.setMyLocationEnabled(true);

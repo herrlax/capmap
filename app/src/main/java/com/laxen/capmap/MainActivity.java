@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity
     // fetches data from server
     public void fetchData() {
 
-        String url = "http://jsonplaceholder.typicode.com/todos";
+        String url = "http://malmqvist.it/api";
 
         JsonArrayRequest jsObjRequest = new JsonArrayRequest
             (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
@@ -334,47 +334,21 @@ public class MainActivity extends AppCompatActivity
 
                     Log.d("app", response.toString());
 
-                    JSONObject json1 = new JSONObject();
-                    JSONObject json2 = new JSONObject();
-
-                    try {
-                        json1.put("lat", "51.5074");
-                        json1.put("lon", "0.1278");
-                        json1.put("videoUrl", "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp");
-
-                        json2.put("lat", "50.8225");
-                        json2.put("lon", "0.1372");
-                        json2.put("videoUrl", "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp");
-
-
-                    } catch (JSONException e) {
-
-                    }
-
-                    JSONArray array = new JSONArray();
-
-                    array.put(json1);
-                    array.put(json2);
-
                     // adds the dummy data to map
-                    for(VideoItem item : JsonHelper.jsonArrayToSet(array)){
-                        Log.d("app", item.toString());
-                    }
-
-                    // adds the dummy data to map
-                    addToMap(JsonHelper.jsonArrayToSet(array));
+                    addToMap(JsonHelper.jsonArrayToSet(response));
 
                     // adds the fetched data to map
-                    /*for(VideoItem item : jsonArrayToObjects(response)){
+                    for(VideoItem item : JsonHelper.jsonArrayToSet(response)){
                         Log.d("app", item.toString());
-                    }*/
+                    }
                 }
 
             }, new Response.ErrorListener() {
 
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(MainActivity.this, "Volley didn't work", Toast.LENGTH_SHORT).show();
+                    Log.d("app", error.getMessage());
+                    Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
 
                 }
             });

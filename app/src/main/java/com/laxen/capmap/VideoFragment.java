@@ -2,6 +2,8 @@ package com.laxen.capmap;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
+import android.content.pm.ActivityInfo;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,13 +36,25 @@ public class VideoFragment extends Fragment {
                 // end fragment when user clicks video
                 videoView.stopPlayback();
                 getActivity().getFragmentManager().beginTransaction().remove(VideoFragment.this).commit();
+                getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 Log.e("App", "ending fragment");
             }
         });
 
         videoView.setVideoURI(videoUri);
+        videoView.requestFocus();
 
-        videoView.start();
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            // Close the progress bar and play the video
+            public void onPrepared(MediaPlayer mediaPlayer) {
+
+                if(mediaPlayer.getVideoWidth() > mediaPlayer.getVideoHeight()) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+
+                videoView.start();
+            }
+        });
 
         return view;
     }

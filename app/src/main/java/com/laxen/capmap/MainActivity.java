@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity
 
     private boolean debug = true;
 
+    boolean orienChanged = false;
+    int lastOrientation = 0;
 
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
@@ -94,26 +97,39 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        initGooglePlayServices();
+        if(orienChanged) {
+            Log.d("app", "YEA");
+            videoFragment.setVideoUri(videoUri);
 
-        createMap();
+            FragmentTransaction transaction;
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestCamera();
+            transaction = this.getFragmentManager().beginTransaction();
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
+            transaction.commit();
+        } else {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            initGooglePlayServices();
+
+            createMap();
+
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    requestCamera();
 
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
-            }
-        });
+                }
+            });
 
-        saver = new MediaSaver();
-        urlMap = new HashMap<>();
+            saver = new MediaSaver();
+            urlMap = new HashMap<>();
+        }
     }
 
     public void initGooglePlayServices() {
@@ -422,6 +438,7 @@ public class MainActivity extends AppCompatActivity
             }
 
         } else {
+            videoUri = Uri.parse(url);
 
             videoFragment.setVideoUri(Uri.parse(url));
 
@@ -497,6 +514,19 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        Log.d("app", "CHANGE");
+        int orientation = newConfig.orientation;
+        if(orientation != lastOrientation){
+            orienChanged  = true;
+            lastOrientation = orientation ;
+        }
 
     }
 }

@@ -2,6 +2,7 @@ package com.laxen.capmap;
 
 import android.Manifest;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -22,14 +23,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -43,12 +41,17 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.laxen.capmap.network.RequestHandler;
 import com.laxen.capmap.utils.JsonHelper;
+import com.laxen.capmap.utils.MultipartRequest;
 import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
@@ -92,9 +95,6 @@ public class MainActivity extends AppCompatActivity
 
     // fragment for displaying video
     VideoFragment videoFragment = new VideoFragment();
-
-    private final String PREFS_NAME = "SAVED_VIDEOS";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -348,56 +348,97 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void uploadVideo(final Uri uri) {
+    private final Context context = this;
+    private final String twoHyphens = "--";
+    private final String lineEnd = "\r\n";
+    private final String boundary = "apiclient-" + System.currentTimeMillis();
+    private final String mimeType = "multipart/form-data;boundary=" + boundary;
+    private byte[] multipartBody;
 
-        String url = "";
+    public void uploadVideo(Uri uri) {
+
+        String url = "http://10.1.0.4:3000/videos";
         Log.d("app", uri.toString());
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String s) {
+        byte[] videoBytes = new byte[200];
 
-                        //Showing toast message of the response
-                        Toast.makeText(MainActivity.this, s , Toast.LENGTH_LONG).show();
-                    }
-                },
+        try {
+            InputStream iStream = getContentResolver().openInputStream(uri);
+            videoBytes = getBytes(iStream);
+        } catch (Exception e) {
+            Log.e("app", "could not convert into byte array");
+        }
 
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bos);
 
-                        //Showing toast
-                        Toast.makeText(MainActivity.this, volleyError.getMessage().toString(), Toast.LENGTH_LONG).show();
-                    }
-                }){
+        try {
 
+            // the first file
+            buildPart(dos, videoBytes, uri.toString());
+
+            // send multipart form data necessary after file data
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            // pass to multipart body
+            multipartBody = bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        MultipartRequest multipartRequest = new MultipartRequest(url, null, mimeType,
+                multipartBody, new Response.Listener<NetworkResponse>() {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                //Converting Bitmap to String
-                String image = uri.toString();
-
-                //Getting Image Name
-                String name = "cleaver name";
-
-                //Creating parameters
-                Map<String,String> params = new Hashtable();
-
-                //Adding parameters
-                params.put("lat", "52.1");
-                params.put("lon", "34.2");
-                params.put("videoUrl", image);
-
-                //returning parameters
-                return params;
+            public void onResponse(NetworkResponse response) {
+                Toast.makeText(context, "Upload successfully!", Toast.LENGTH_SHORT).show();
             }
-        };
 
-        //Creating a Request Queue
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(context, "Upload failed!\r\n" + error.toString(), Toast.LENGTH_SHORT).show();
+                Log.e("app", error.toString() + "");
+            }
+        });
 
-        //Adding request to the queue
-        requestQueue.add(stringRequest);
+        RequestHandler.getInstance(context).addToRequestQueue(multipartRequest);
+    }
+
+    private void buildPart(DataOutputStream dataOutputStream, byte[] fileData, String fileName) throws IOException {
+        dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
+        dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"video[video]\"; filename=\""
+                + fileName + "\"" + lineEnd + "Content-type: video/mp4" + lineEnd);
+        dataOutputStream.writeBytes(lineEnd);
+
+        ByteArrayInputStream fileInputStream = new ByteArrayInputStream(fileData);
+        int bytesAvailable = fileInputStream.available();
+
+        int maxBufferSize = 1024 * 1024;
+        int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+        byte[] buffer = new byte[bufferSize];
+
+        // read file and write it into form...
+        int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+        while (bytesRead > 0) {
+            dataOutputStream.write(buffer, 0, bufferSize);
+            bytesAvailable = fileInputStream.available();
+            bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+        }
+
+        dataOutputStream.writeBytes(lineEnd);
+    }
+
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
     }
 
     // fetches data from server

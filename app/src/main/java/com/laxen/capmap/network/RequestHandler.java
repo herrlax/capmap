@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
 /**
@@ -14,10 +15,26 @@ public class RequestHandler {
     private static RequestHandler instance;
     private RequestQueue queue;
     private static Context context;
+    private ImageLoader mImageLoader;
 
-    private RequestHandler(Context context) {
+    private RequestHandler(final Context context) {
         this.context = context;
         queue = getRequestQueue();
+
+        /*mImageLoader = new ImageLoader(queue,
+                new ImageLoader.ImageCache() {
+                    private final LruBitmapCache cache = new LruBitmapCache(context);
+
+                    @Override
+                    public Bitmap getBitmap(String url) {
+                        return cache.get(url);
+                    }
+
+                    @Override
+                    public void putBitmap(String url, Bitmap bitmap) {
+                        cache.put(url, bitmap);
+                    }
+                });*/
 
     }
 
@@ -29,11 +46,9 @@ public class RequestHandler {
     }
 
     public RequestQueue getRequestQueue() {
-        if (queue == null) {
-            // getApplicationContext() is key, it keeps you from leaking the
-            // Activity or BroadcastReceiver if someone passes one in.
+        if (queue == null)
             queue = Volley.newRequestQueue(context.getApplicationContext());
-        }
+
         return queue;
     }
 

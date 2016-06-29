@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:background="@color/colorPrimary"
     android:layout_height="fill_parent"
+    android:background="#000"
     android:clickable="true"
     android:id="@+id/videoBack"
     android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
     <VideoView
+        android:layout_centerVertical="true"
         android:id="@+id/videoView"
         android:clickable="true"
         android:layout_width="match_parent"

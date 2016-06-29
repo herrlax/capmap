@@ -3,11 +3,8 @@ package com.laxen.capmap;
 import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -39,6 +36,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.laxen.capmap.network.RequestHandler;
+import com.laxen.capmap.utils.JsonHelper;
 import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
@@ -47,7 +45,6 @@ import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -65,7 +62,6 @@ public class MainActivity extends AppCompatActivity
 
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
-    private final int MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE = 3;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 
     // client for handling calls to the google play services api
@@ -147,15 +143,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.d("app", "map ready");
-        map = googleMap;
-        // mapHandler = new MapHandler(map, this, jobsModel);
 
+        map = googleMap;
         map.setOnMyLocationButtonClickListener(this);
         map.setOnMarkerClickListener(this);
-
-        // map.setOnMapClickListener(mapHandler);
-        // map.setOnMapLongClickListener(mapHandler);
 
         // for testing
         if (debug) {
@@ -225,8 +216,6 @@ public class MainActivity extends AppCompatActivity
      */
     private void requestLocation() {
 
-        Log.e("app", "requesting location");
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -272,7 +261,8 @@ public class MainActivity extends AppCompatActivity
                 } else {
 
                     // permission denied
-                    Toast.makeText(MainActivity.this, "Location is needed to post videos :<", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Location is needed to post videos :<",
+                            Toast.LENGTH_SHORT).show();
 
                 }
                 return;
@@ -288,7 +278,8 @@ public class MainActivity extends AppCompatActivity
 
                     // permission denied
                     // permission granted
-                    Toast.makeText(MainActivity.this, "Function requires camera", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Function requires camera",
+                            Toast.LENGTH_SHORT).show();
 
                 }
                 return;
@@ -315,18 +306,11 @@ public class MainActivity extends AppCompatActivity
                     double lat = location.getLatitude();
                     double lon = location.getLongitude();
 
-                    /*if(urlMap == null) {
-                        urlMap = new HashMap<>();
-                    }
-
-                     stores the video to map
-                    urlMap.put(lat+ ";" + lon, data.getData());
-                    saveLocally(lat+ ";" + lon + ";" + data.getData().toString());*/
-
-
                     // todo upload video
 
-                    map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ";" + lon));
+                    map.addMarker(new MarkerOptions()
+                            .position(new LatLng(lat, lon))
+                            .title(lat+ ";" + lon));
                 }
 
             } else if (resultCode == RESULT_CANCELED) {
@@ -336,34 +320,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
-
-    public void saveLocally(String latlongVid){
-
-        // saves coordinates and file pointers locally
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        SharedPreferences.Editor editor = settings.edit();
-
-        // retrieves locally stored data
-        Set<String> savedStrings = settings.getStringSet("videos", new HashSet<String>());
-
-
-        Set<String> newStrings = new HashSet<>();
-
-        // adds the saved data to a new string set
-        for(String str : savedStrings) {
-            newStrings.add(str);
-        }
-
-        // finally adds the new one to the string set
-        newStrings.add(latlongVid);
-
-
-        Log.d("app", "stored : " + newStrings.toString());
-        editor.putStringSet("videos", newStrings);
-        editor.commit();
-
-    }
-
 
     // fetches data from server
     public void fetchData() {
@@ -401,12 +357,12 @@ public class MainActivity extends AppCompatActivity
                     array.put(json2);
 
                     // adds the dummy data to map
-                    for(VideoItem item : jsonArrayToObjects(array)){
+                    for(VideoItem item : JsonHelper.jsonArrayToSet(array)){
                         Log.d("app", item.toString());
                     }
 
                     // adds the dummy data to map
-                    addToMap(jsonArrayToObjects(array));
+                    addToMap(JsonHelper.jsonArrayToSet(array));
 
                     // adds the fetched data to map
                     /*for(VideoItem item : jsonArrayToObjects(response)){
@@ -428,25 +384,6 @@ public class MainActivity extends AppCompatActivity
         RequestHandler.getInstance(this).addToRequestQueue(jsObjRequest);
     }
 
-    public Set<VideoItem> jsonArrayToObjects(JSONArray jsonArray) {
-
-        Set<VideoItem> set = new HashSet<>();
-        Gson gson = new Gson();
-
-
-        for (int i=0; i<jsonArray.length(); i++) {
-
-            try{
-                VideoItem videoItem = gson.fromJson(jsonArray.get(i).toString(), VideoItem.class);
-                set.add(videoItem);
-            } catch (JSONException e) {
-                Log.e("app", e.getMessage());
-            }
-
-        }
-
-        return set;
-    }
 
     // adds a set of video items to the map as markers
     public void addToMap(Set<VideoItem> items) {

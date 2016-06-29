@@ -18,23 +18,26 @@ import android.widget.VideoView;
 public class VideoFragment extends Fragment {
 
     private Uri videoUri;
+    private VideoView videoView;
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.content_video, container, false);
 
-        RelativeLayout videoBack = (RelativeLayout) view.findViewById(R.id.videoBack);
+        final RelativeLayout videoBack = (RelativeLayout) view.findViewById(R.id.videoBack);
+        videoView = (VideoView) view.findViewById(R.id.videoView);
+
         videoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // end fragment when user clicks video
+                videoView.stopPlayback();
                 getActivity().getFragmentManager().beginTransaction().remove(VideoFragment.this).commit();
                 Log.e("App", "ending fragment");
             }
         });
 
-        VideoView videoView = (VideoView) view.findViewById(R.id.videoView);
         videoView.setVideoURI(videoUri);
 
         videoView.start();

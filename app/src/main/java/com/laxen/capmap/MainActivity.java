@@ -29,6 +29,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -163,6 +164,8 @@ public class MainActivity extends AppCompatActivity
         map = googleMap;
         map.setOnMyLocationButtonClickListener(this);
         map.setOnMarkerClickListener(this);
+        requestLocation();
+
 
         // for testing
         if (debug) {
@@ -258,6 +261,14 @@ public class MainActivity extends AppCompatActivity
 
             // sets location
             location = LocationServices.FusedLocationApi.getLastLocation(apiClient);
+
+            // zooms in on current location
+            if(location != null) {
+                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
+                map.animateCamera(cameraUpdate);
+                map.setMyLocationEnabled(true);
+            }
         }
     }
 

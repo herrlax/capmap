@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -45,6 +47,7 @@ import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity
     private Uri videoUri;
 
     // Maps with all uris and latlongs
-    private Map<String, Uri> uriMap;
+    private Map<String, String> urlMap;
 
     // fragment for displaying video
     VideoFragment videoFragment = new VideoFragment();
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         saver = new MediaSaver();
-        uriMap = new HashMap<>();
+        urlMap = new HashMap<>();
     }
 
     public void initGooglePlayServices() {
@@ -160,9 +163,7 @@ public class MainActivity extends AppCompatActivity
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(SWEDEN, 4.5f));
         }
 
-        loadLocalData();
         fetchData();
-
     }
 
     /**
@@ -255,62 +256,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Enables the writing of external storage
-     */
-    private void requestRead() {
-
-        Log.e("app", "requesting location");
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
-                // if the user has denied the permission before
-
-                // request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE);
-
-            } else {
-
-                // request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE);
-
-            }
-
-        } else {
-
-            // if permission is granted
-            Uri uri = uriMap.get(locationString);
-
-            if(uri == null) {
-
-                if (debug) {
-                    Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
-                }
-
-            } else {
-
-                videoFragment.setVideoUri(uri);
-
-                FragmentTransaction transaction;
-
-                transaction = this.getFragmentManager().beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
-                transaction.commit();
-
-            }
-        }
-    }
-
-
     // Handles all permissions
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -348,22 +293,6 @@ public class MainActivity extends AppCompatActivity
                 }
                 return;
             }
-            case MY_PERMISSIONS_REQUEST_ACCESS_READ_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    requestRead();
-
-                } else {
-
-                    // permission denied
-                    // permission granted
-                    Toast.makeText(MainActivity.this, "Function requires access to external storage", Toast.LENGTH_LONG).show();
-
-                }
-                return;
-            }
             // other 'case' lines to check for other
             // permissions this app might request
         }
@@ -386,13 +315,16 @@ public class MainActivity extends AppCompatActivity
                     double lat = location.getLatitude();
                     double lon = location.getLongitude();
 
-                    if(uriMap == null) {
-                        uriMap = new HashMap<>();
+                    /*if(urlMap == null) {
+                        urlMap = new HashMap<>();
                     }
 
-                    // stores the video to map
-                    uriMap.put(lat+ ";" + lon, data.getData());
-                    saveLocally(lat+ ";" + lon + ";" + data.getData().toString());
+                     stores the video to map
+                    urlMap.put(lat+ ";" + lon, data.getData());
+                    saveLocally(lat+ ";" + lon + ";" + data.getData().toString());*/
+
+
+                    // todo upload video
 
                     map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ";" + lon));
                 }
@@ -448,17 +380,16 @@ public class MainActivity extends AppCompatActivity
 
                     JSONObject json1 = new JSONObject();
                     JSONObject json2 = new JSONObject();
-                    JSONObject json3 = new JSONObject();
 
                     try {
                         json1.put("lat", "51.5074");
                         json1.put("lon", "0.1278");
+                        json1.put("videoUrl", "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp");
 
                         json2.put("lat", "50.8225");
                         json2.put("lon", "0.1372");
+                        json2.put("videoUrl", "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp");
 
-                        json3.put("lat", "39.9607");
-                        json3.put("lon", "75.6055");
 
                     } catch (JSONException e) {
 
@@ -468,7 +399,6 @@ public class MainActivity extends AppCompatActivity
 
                     array.put(json1);
                     array.put(json2);
-                    array.put(json3);
 
                     // adds the dummy data to map
                     for(VideoItem item : jsonArrayToObjects(array)){
@@ -521,50 +451,24 @@ public class MainActivity extends AppCompatActivity
     // adds a set of video items to the map as markers
     public void addToMap(Set<VideoItem> items) {
 
+        if(urlMap == null) {
+            urlMap = new HashMap<>();
+        }
+
+        urlMap.clear();
+
         for(VideoItem item : items) {
 
+            String key = item.getLat()+ ";" + item.getLon();
+
             // todo add to urimap
+            urlMap.put(key, item.getVideoUrl());
 
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(item.getLat(), item.getLon()))
-                    .title(item.getLat()+ ";" + item.getLon()));
+                    .title(key));
         }
     }
-
-    // todo remove this method
-    public void addMarkersToMap(Set<String> data) {
-
-        for(String str : data) {
-            Log.d("app", str);
-
-            /*String[] strs = str.split(";");
-
-            if(strs.length == 3) {
-
-                double lat = Double.parseDouble(strs[0]);
-                double lon = Double.parseDouble(strs[1]);
-                Uri uri = Uri.parse(strs[2]);
-
-                uriMap.put(lat+ ";" + lon, uri);
-
-                map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(lat+ ";" + lon));
-            }*/
-        }
-    }
-
-    // loads local data and populates map
-    public void loadLocalData() {
-
-        // saves coordinates and file pointers locally
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-
-        Set<String> savedStrings = settings.getStringSet("videos", new HashSet<String>());
-
-        // adds local data to map
-        addMarkersToMap(savedStrings);
-    }
-
-
 
 
     //  map.setMyLocationEnabled(true);
@@ -597,11 +501,29 @@ public class MainActivity extends AppCompatActivity
         // gets the locationString of the marker (i.e the title)
         locationString = marker.getTitle();
 
+        // gets url to video from location
+        String url = urlMap.get(locationString);
 
-        // gets uri from location
-        requestRead();
+        if(url == null || url.equals("")) {
 
-        return false;
+            if (debug) {
+                Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
+            }
+
+        } else {
+
+            videoFragment.setVideoUri(Uri.parse(url));
+
+            FragmentTransaction transaction;
+
+            transaction = this.getFragmentManager().beginTransaction();
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
+            transaction.commit();
+
+        }
+
+        return true;
     }
 
 

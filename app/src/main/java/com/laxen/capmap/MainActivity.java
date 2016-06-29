@@ -22,10 +22,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -42,13 +46,9 @@ import com.laxen.capmap.utils.JsonHelper;
 import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.google.gson.Gson;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
@@ -333,7 +333,7 @@ public class MainActivity extends AppCompatActivity
                     double lat = location.getLatitude();
                     double lon = location.getLongitude();
 
-                    // todo upload video
+                    uploadVideo(data.getData());
 
                     map.addMarker(new MarkerOptions()
                             .position(new LatLng(lat, lon))
@@ -346,6 +346,58 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this, "Video capture failed", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public void uploadVideo(final Uri uri) {
+
+        String url = "";
+        Log.d("app", uri.toString());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+
+                        //Showing toast message of the response
+                        Toast.makeText(MainActivity.this, s , Toast.LENGTH_LONG).show();
+                    }
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+
+                        //Showing toast
+                        Toast.makeText(MainActivity.this, volleyError.getMessage().toString(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                //Converting Bitmap to String
+                String image = uri.toString();
+
+                //Getting Image Name
+                String name = "cleaver name";
+
+                //Creating parameters
+                Map<String,String> params = new Hashtable();
+
+                //Adding parameters
+                params.put("lat", "52.1");
+                params.put("lon", "34.2");
+                params.put("videoUrl", image);
+
+                //returning parameters
+                return params;
+            }
+        };
+
+        //Creating a Request Queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //Adding request to the queue
+        requestQueue.add(stringRequest);
     }
 
     // fetches data from server

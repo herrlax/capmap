@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
@@ -14,6 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by laxen on 6/30/16.
@@ -89,10 +92,8 @@ public class UploadManager {
                     }
                 }
         );
-
-        RequestHandler.getInstance(context).addToRequestQueue(multipartRequest);
     }
-
+    
     // converts an input stream into a byte array
     public byte[] toBytes(InputStream stream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
@@ -113,9 +114,10 @@ public class UploadManager {
         dOut.writeBytes("Content-Disposition: form-data; name=\"video[video]\";"
                 + " filename=\""  + "herpaderp.mp4" + "\""
                 + lineEnd + "Content-type: video/mp4"
-                + lineEnd + "\"latitude\"=>" + lat
-                + lineEnd + "\"longitude\"=>" + lon
+                + lineEnd + "\">, \"latitude\"=>\"" + lat + "\""
+                + ", \"longitude\"=>\"" + lon + "\""
                 + lineEnd);
+
         dOut.writeBytes(lineEnd);
 
         ByteArrayInputStream fileInputStream = new ByteArrayInputStream(fileData);

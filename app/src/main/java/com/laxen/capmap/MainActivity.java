@@ -2,7 +2,6 @@ package com.laxen.capmap;
 
 import android.Manifest;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -17,17 +16,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
+import android.view.View;
 import android.widget.Toast;
 
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -39,18 +35,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.laxen.capmap.network.RequestHandler;
+import com.laxen.capmap.network.DownloadManager;
+import com.laxen.capmap.network.UploadManager;
 import com.laxen.capmap.utils.JsonHelper;
-import com.laxen.capmap.utils.MultipartRequest;
 import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +50,12 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        GoogleMap.OnMarkerClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SurfaceHolder.Callback {
+        GoogleMap.OnMarkerClickListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        SurfaceHolder.Callback,
+        Response.Listener<JSONArray>,
+        Response.ErrorListener {
 
 
     private boolean debug = true;
@@ -325,7 +321,6 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
 
-
                 // refresh current position
                 onStart();
 
@@ -348,134 +343,44 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private final Context context = this;
-    private final String twoHyphens = "--";
-    private final String lineEnd = "\r\n";
-    private final String boundary = "apiclient-" + System.currentTimeMillis();
-    private final String mimeType = "multipart/form-data;boundary=" + boundary;
-    private byte[] multipartBody;
-
+    // uploads a video file through the UploadManager
     public void uploadVideo(Uri uri) {
 
         String url = "http://10.1.0.4:3000/videos";
         Log.d("app", uri.toString());
 
-        byte[] videoBytes = new byte[200];
+        UploadManager manager = new UploadManager(this);
+        manager.setPutUrl(url);
 
-        try {
-            InputStream iStream = getContentResolver().openInputStream(uri);
-            videoBytes = getBytes(iStream);
-        } catch (Exception e) {
-            Log.e("app", "could not convert into byte array");
-        }
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(bos);
-
-        try {
-
-            // the first file
-            buildPart(dos, videoBytes, uri.toString());
-
-            // send multipart form data necessary after file data
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-            // pass to multipart body
-            multipartBody = bos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        MultipartRequest multipartRequest = new MultipartRequest(url, null, mimeType,
-                multipartBody, new Response.Listener<NetworkResponse>() {
-            @Override
-            public void onResponse(NetworkResponse response) {
-                Toast.makeText(context, "Upload successfully!", Toast.LENGTH_SHORT).show();
-            }
-
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context, "Upload failed!\r\n" + error.toString(), Toast.LENGTH_SHORT).show();
-                Log.e("app", error.toString() + "");
-            }
-        });
-
-        RequestHandler.getInstance(context).addToRequestQueue(multipartRequest);
+        manager.uploadFromUri(uri);
     }
 
-    private void buildPart(DataOutputStream dataOutputStream, byte[] fileData, String fileName) throws IOException {
-        dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
-        dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"video[video]\"; filename=\""
-                + fileName + "\"" + lineEnd + "Content-type: video/mp4" + lineEnd);
-        dataOutputStream.writeBytes(lineEnd);
-
-        ByteArrayInputStream fileInputStream = new ByteArrayInputStream(fileData);
-        int bytesAvailable = fileInputStream.available();
-
-        int maxBufferSize = 1024 * 1024;
-        int bufferSize = Math.min(bytesAvailable, maxBufferSize);
-        byte[] buffer = new byte[bufferSize];
-
-        // read file and write it into form...
-        int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
-        while (bytesRead > 0) {
-            dataOutputStream.write(buffer, 0, bufferSize);
-            bytesAvailable = fileInputStream.available();
-            bufferSize = Math.min(bytesAvailable, maxBufferSize);
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-        }
-
-        dataOutputStream.writeBytes(lineEnd);
-    }
-
-    public byte[] getBytes(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-        int bufferSize = 1024;
-        byte[] buffer = new byte[bufferSize];
-
-        int len = 0;
-        while ((len = inputStream.read(buffer)) != -1) {
-            byteBuffer.write(buffer, 0, len);
-        }
-        return byteBuffer.toByteArray();
-    }
 
     // fetches data from server
     public void fetchData() {
+        DownloadManager manager = new DownloadManager(this);
+        manager.setOnResponseListener(this);
+        manager.setOnErrorListener(this);
+        manager.setGetUrl("http://malmqvist.it/api");
+        manager.fetchData();
+    }
 
-        String url = "http://malmqvist.it/api";
+    @Override
+    public void onResponse(JSONArray response) {
 
-        JsonArrayRequest jsObjRequest = new JsonArrayRequest
-            (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+        // adds the dummy data to map
+        addToMap(JsonHelper.jsonArrayToSet(response));
 
-                @Override
-                public void onResponse(JSONArray response) {
+        // adds the fetched data to map
+        for(VideoItem item : JsonHelper.jsonArrayToSet(response)){
+            Log.d("app", item.toString());
+        }
+    }
 
-                    Log.d("app", response.toString());
-
-                    // adds the dummy data to map
-                    addToMap(JsonHelper.jsonArrayToSet(response));
-
-                    // adds the fetched data to map
-                    for(VideoItem item : JsonHelper.jsonArrayToSet(response)){
-                        Log.d("app", item.toString());
-                    }
-                }
-
-            }, new Response.ErrorListener() {
-
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("app", error.getMessage());
-                    Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
-
-                }
-            });
-
-
-        // Access the RequestQueue through your singleton class.
-        RequestHandler.getInstance(this).addToRequestQueue(jsObjRequest);
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        Log.d("app", error.getMessage());
+        Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
     }
 
 

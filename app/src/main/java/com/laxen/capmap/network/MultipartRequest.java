@@ -1,4 +1,4 @@
-package com.laxen.capmap.utils;
+package com.laxen.capmap.network;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;

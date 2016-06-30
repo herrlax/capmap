@@ -6,7 +6,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
@@ -72,14 +71,18 @@ public class UploadManager {
             e.printStackTrace();
         }
 
+        Map<String, String> header = new HashMap<>();
+        header.put("video_file_name", "1337");
+        header.put("video_content_type", "1338");
+
         // performing put request to server
-        MultipartRequest multipartRequest = new MultipartRequest(putUrl, null, mimeType, multipartBody,
+        MultipartRequest multipartRequest = new MultipartRequest(putUrl, header, mimeType, multipartBody,
 
                 // on success
                 new Response.Listener<NetworkResponse>() {
                     @Override
                     public void onResponse(NetworkResponse response) {
-                        Toast.makeText(context, "Upload successfully!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Upload successfully: " + response.toString(), Toast.LENGTH_SHORT).show();
                     }
                 },
 
@@ -92,8 +95,10 @@ public class UploadManager {
                     }
                 }
         );
+
+        RequestHandler.getInstance(context).addToRequestQueue(multipartRequest);
     }
-    
+
     // converts an input stream into a byte array
     public byte[] toBytes(InputStream stream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
@@ -110,14 +115,14 @@ public class UploadManager {
 
     // constructs the actual put request
     private void buildPart(DataOutputStream dOut, byte[] fileData, String fileName) throws IOException {
+        buildStringPart(dOut, "longitude", "1337");
+        buildStringPart(dOut, "latitude", "1338");
+
         dOut.writeBytes(twoHyphens + boundary + lineEnd);
         dOut.writeBytes("Content-Disposition: form-data; name=\"video[video]\";"
                 + " filename=\""  + "herpaderp.mp4" + "\""
                 + lineEnd + "Content-type: video/mp4"
-                + lineEnd + "\">, \"latitude\"=>\"" + lat + "\""
-                + ", \"longitude\"=>\"" + lon + "\""
                 + lineEnd);
-
         dOut.writeBytes(lineEnd);
 
         ByteArrayInputStream fileInputStream = new ByteArrayInputStream(fileData);
@@ -137,6 +142,17 @@ public class UploadManager {
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
         }
 
+        dOut.writeBytes(lineEnd);
+    }
+    private void buildStringPart(DataOutputStream dOut, String key, String param) throws IOException {
+
+        dOut.writeBytes(twoHyphens + boundary + lineEnd);
+        dOut.writeBytes("Content-Disposition: form-data; name=\"" + key + ";");
+        dOut.writeBytes(lineEnd);
+        dOut.writeBytes("Content-type: text");
+        dOut.writeBytes(lineEnd);
+        dOut.writeBytes(lineEnd);
+        dOut.writeBytes(param);
         dOut.writeBytes(lineEnd);
     }
 

@@ -17,6 +17,7 @@ public class MultipartRequest extends Request<NetworkResponse> {
     private final Response.Listener<NetworkResponse> mListener;
     private final Response.ErrorListener mErrorListener;
     private final Map<String, String> mHeaders;
+
     private final String mMimeType;
     private final byte[] mMultipartBody;
 
@@ -34,6 +35,11 @@ public class MultipartRequest extends Request<NetworkResponse> {
     @Override
     public Map<String, String> getHeaders() throws AuthFailureError {
         return (mHeaders != null) ? mHeaders : super.getHeaders();
+    }
+
+    @Override
+    public Map<String, String> getParams() {
+        return mHeaders;
     }
 
     @Override

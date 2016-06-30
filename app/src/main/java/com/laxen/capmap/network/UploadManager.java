@@ -25,13 +25,14 @@ public class UploadManager {
     private final String lineEnd = "\r\n";
     private final String boundary = "apiclient-" + System.currentTimeMillis();
     private final String mimeType = "multipart/form-data;boundary=" + boundary;
+    private double lat;
+    private double lon;
     private byte[] multipartBody;
 
     private final int BUFFERSIZE = 1024;
 
     public UploadManager(Context context) {
         this.context = context;
-        Log.d("app", "created upload manager");
     }
 
     public void uploadFromUri(Uri uri) {
@@ -109,8 +110,12 @@ public class UploadManager {
     // constructs the actual put request
     private void buildPart(DataOutputStream dOut, byte[] fileData, String fileName) throws IOException {
         dOut.writeBytes(twoHyphens + boundary + lineEnd);
-        dOut.writeBytes("Content-Disposition: form-data; name=\"video[video]\"; filename=\""
-                + fileName + "\"" + lineEnd + "Content-type: video/mp4" + lineEnd);
+        dOut.writeBytes("Content-Disposition: form-data; name=\"video[video]\";"
+                + " filename=\""  + "herpaderp.mp4" + "\""
+                + lineEnd + "Content-type: video/mp4"
+                + lineEnd + "\"latitude\"=>" + lat
+                + lineEnd + "\"longitude\"=>" + lon
+                + lineEnd);
         dOut.writeBytes(lineEnd);
 
         ByteArrayInputStream fileInputStream = new ByteArrayInputStream(fileData);
@@ -135,5 +140,13 @@ public class UploadManager {
 
     public void setPutUrl(String putUrl) {
         this.putUrl = putUrl;
+    }
+
+    public void setLon(double lon) {
+        this.lon = lon;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
     }
 }

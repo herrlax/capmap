@@ -328,7 +328,8 @@ public class MainActivity extends AppCompatActivity
                     double lat = location.getLatitude();
                     double lon = location.getLongitude();
 
-                    uploadVideo(data.getData());
+                    // uploads video to server
+                    uploadVideo(data.getData(), lat, lon);
 
                     map.addMarker(new MarkerOptions()
                             .position(new LatLng(lat, lon))
@@ -344,13 +345,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     // uploads a video file through the UploadManager
-    public void uploadVideo(Uri uri) {
-
-        String url = "http://10.1.0.4:3000/videos";
-        Log.d("app", uri.toString());
+    public void uploadVideo(Uri uri, double lat, double lon) {
 
         UploadManager manager = new UploadManager(this);
-        manager.setPutUrl(url);
+        manager.setPutUrl("http://10.1.0.4:3000/videos");
+        manager.setLat(lat);
+        manager.setLon(lon);
 
         manager.uploadFromUri(uri);
     }
@@ -387,27 +387,19 @@ public class MainActivity extends AppCompatActivity
     // adds a set of video items to the map as markers
     public void addToMap(Set<VideoItem> items) {
 
-        if(urlMap == null) {
+        if(urlMap == null)
             urlMap = new HashMap<>();
-        }
 
         urlMap.clear();
 
         for(VideoItem item : items) {
-
             String key = item.getLat()+ ";" + item.getLon();
-
-            // todo add to urimap
             urlMap.put(key, item.getVideoUrl());
-
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(item.getLat(), item.getLon()))
                     .title(key));
         }
     }
-
-
-    //  map.setMyLocationEnabled(true);
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -433,7 +425,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-
         // gets the locationString of the marker (i.e the title)
         locationString = marker.getTitle();
 
@@ -441,10 +432,8 @@ public class MainActivity extends AppCompatActivity
         String url = urlMap.get(locationString);
 
         if(url == null || url.equals("")) {
-
-            if (debug) {
+            if (debug)
                 Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
-            }
 
         } else {
             videoUri = Uri.parse(url);
@@ -457,7 +446,6 @@ public class MainActivity extends AppCompatActivity
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
             transaction.commit();
-
         }
 
         return true;
@@ -487,12 +475,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
-        Log.e("app", "connected: ");
-
-        // gets the last known position for the device
         requestLocation();
-
     }
 
     /**
@@ -530,12 +513,10 @@ public class MainActivity extends AppCompatActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        Log.d("app", "CHANGE");
         int orientation = newConfig.orientation;
         if(orientation != lastOrientation){
             orienChanged  = true;
             lastOrientation = orientation ;
         }
-
     }
 }

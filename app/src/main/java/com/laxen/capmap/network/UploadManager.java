@@ -14,8 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by laxen on 6/30/16.
@@ -58,25 +56,20 @@ public class UploadManager {
         DataOutputStream dOut = new DataOutputStream(bOut);
 
         try {
-            // building put request
-            buildPart(dOut, file, uri.toString());
 
-            // send multipart form data necessary after file data
-            dOut.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            // create the different parts of the output stream
+            buildParts(dOut, file, uri.toString());
 
-            // pass to multipart body
+            // pass constructed byte array from outputstream to multipart body
             multipartBody = bOut.toByteArray();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Map<String, String> header = new HashMap<>();
-        header.put("video_file_name", "1337");
-        header.put("video_content_type", "1338");
-
-        // performing put request to server
-        MultipartRequest multipartRequest = new MultipartRequest(putUrl, header, mimeType, multipartBody,
+        // performing put request to server with the URL to put, null as headers, mimeType
+        // and constructed multipartBody from output stream
+        MultipartRequest multipartRequest = new MultipartRequest(putUrl, null, mimeType, multipartBody,
 
                 // on success
                 new Response.Listener<NetworkResponse>() {
@@ -114,18 +107,26 @@ public class UploadManager {
     }
 
     // constructs the actual put request
-    private void buildPart(DataOutputStream dOut, byte[] fileData, String fileName) throws IOException {
-        buildStringPart(dOut, "longitude", "1337");
-        buildStringPart(dOut, "latitude", "1338");
+    private void buildParts(DataOutputStream dOut, byte[] file, String filename) throws IOException {
 
+        buildTextPart(dOut, "latitude", lat+"");
+        buildTextPart(dOut, "longitude", lon+"");
+        buildFilePart(dOut, file, filename);
+
+        // send multipart form data necesssary after text and file data
+        dOut.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+    }
+
+    // creates the file part of the request
+    private void buildFilePart(DataOutputStream dOut, byte[] file, String filename) throws IOException {
         dOut.writeBytes(twoHyphens + boundary + lineEnd);
-        dOut.writeBytes("Content-Disposition: form-data; name=\"video[video]\";"
-                + " filename=\""  + "herpaderp.mp4" + "\""
+        dOut.writeBytes("Content-Disposition: form-data; name=\"video\";"
+                + " filename=\""  + filename + ".mp4" + "\""
                 + lineEnd + "Content-type: video/mp4"
                 + lineEnd);
         dOut.writeBytes(lineEnd);
 
-        ByteArrayInputStream fileInputStream = new ByteArrayInputStream(fileData);
+        ByteArrayInputStream fileInputStream = new ByteArrayInputStream(file);
         int bytesAvailable = fileInputStream.available();
 
         int maxBufferSize = 1024 * 1024;
@@ -144,6 +145,16 @@ public class UploadManager {
 
         dOut.writeBytes(lineEnd);
     }
+
+    private void buildTextPart(DataOutputStream dataOutputStream, String parameterName, String parameterValue) throws IOException {
+        dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
+        dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + parameterName + "\"" + lineEnd);
+        dataOutputStream.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
+        dataOutputStream.writeBytes(lineEnd);
+        dataOutputStream.writeBytes(parameterValue + lineEnd);
+    }
+
+    // creates the string part of the request (parameters)
     private void buildStringPart(DataOutputStream dOut, String key, String param) throws IOException {
 
         dOut.writeBytes(twoHyphens + boundary + lineEnd);

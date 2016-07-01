@@ -22,6 +22,8 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.volley.Network;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.google.android.gms.common.ConnectionResult;
@@ -54,8 +56,8 @@ public class MainActivity extends AppCompatActivity
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         SurfaceHolder.Callback,
-        Response.Listener<JSONArray>,
-        Response.ErrorListener {
+        Response.Listener,
+        Response.ErrorListener{
 
 
     private boolean debug = true;
@@ -330,10 +332,6 @@ public class MainActivity extends AppCompatActivity
 
                     // uploads video to server
                     uploadVideo(data.getData(), lat, lon);
-
-                    map.addMarker(new MarkerOptions()
-                            .position(new LatLng(lat, lon))
-                            .title(lat+ ";" + lon));
                 }
 
             } else if (resultCode == RESULT_CANCELED) {
@@ -348,6 +346,8 @@ public class MainActivity extends AppCompatActivity
     public void uploadVideo(Uri uri, double lat, double lon) {
 
         UploadManager manager = new UploadManager(this);
+        manager.setOnResponseListener(this);
+        manager.setonErrorResponseListener(this);
         manager.setPutUrl("http://10.1.0.4:3000/videos");
         manager.setLat(lat);
         manager.setLon(lon);
@@ -366,13 +366,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onResponse(JSONArray response) {
+    public void onResponse(Object response) {
 
-        // adds fetched data to map
-        addToMap(JsonHelper.jsonArrayToSet(response));
+        // if response from download manager
+        if(response.getClass() == JSONArray.class) {
+            addToMap(JsonHelper.jsonArrayToSet((JSONArray) response));
+            return;
+        }
+
+        // if response from upload manager
+        if(response.getClass() == NetworkResponse.class) {
+            Toast.makeText(MainActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
+            fetchData();
+            return;
+        }
 
     }
 
+    // on fail response from download manager
     @Override
     public void onErrorResponse(VolleyError error) {
         Log.d("app", error.getMessage());

@@ -31,6 +31,10 @@ public class UploadManager {
 
     private final int BUFFERSIZE = 1024;
 
+    Response.Listener<NetworkResponse> onResponseListener;
+    Response.ErrorListener onErrorResponseListener;
+
+
     public UploadManager(Context context) {
         this.context = context;
     }
@@ -69,24 +73,8 @@ public class UploadManager {
 
         // performing put request to server with the URL to put, null as headers, mimeType
         // and constructed multipartBody from output stream
-        MultipartRequest multipartRequest = new MultipartRequest(putUrl, null, mimeType, multipartBody,
-
-                // on success
-                new Response.Listener<NetworkResponse>() {
-                    @Override
-                    public void onResponse(NetworkResponse response) {
-                        Toast.makeText(context, "Upload successfully: " + response.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                },
-
-                // on fail
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(context, "Upload failed!\r\n" + error.toString(), Toast.LENGTH_SHORT).show();
-                        Log.e("app", error.toString() + "");
-                    }
-                }
+        MultipartRequest multipartRequest = new MultipartRequest(putUrl, null, mimeType,
+                multipartBody, onResponseListener, onErrorResponseListener
         );
 
         RequestHandler.getInstance(context).addToRequestQueue(multipartRequest);
@@ -154,17 +142,12 @@ public class UploadManager {
         dataOutputStream.writeBytes(parameterValue + lineEnd);
     }
 
-    // creates the string part of the request (parameters)
-    private void buildStringPart(DataOutputStream dOut, String key, String param) throws IOException {
+    public void setOnResponseListener(Response.Listener<NetworkResponse> onResponseListener) {
+        this.onResponseListener = onResponseListener;
+    }
 
-        dOut.writeBytes(twoHyphens + boundary + lineEnd);
-        dOut.writeBytes("Content-Disposition: form-data; name=\"" + key + ";");
-        dOut.writeBytes(lineEnd);
-        dOut.writeBytes("Content-type: text");
-        dOut.writeBytes(lineEnd);
-        dOut.writeBytes(lineEnd);
-        dOut.writeBytes(param);
-        dOut.writeBytes(lineEnd);
+    public void setonErrorResponseListener(Response.ErrorListener onErrorResponseListener) {
+        this.onErrorResponseListener = onErrorResponseListener;
     }
 
     public void setPutUrl(String putUrl) {

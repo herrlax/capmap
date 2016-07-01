@@ -368,11 +368,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResponse(JSONArray response) {
 
-        for(VideoItem item : JsonHelper.jsonArrayToSet(response)){
-            Log.d("app", item.toString());
-        }
-
-        // adds the dummy data to map
+        // adds fetched data to map
         addToMap(JsonHelper.jsonArrayToSet(response));
 
     }
@@ -430,6 +426,8 @@ public class MainActivity extends AppCompatActivity
 
         // gets url to video from location
         String url = urlMap.get(locationString);
+
+        Log.d("app", "URL TO PLAY: " + url);
 
         if(url == null || url.equals("")) {
             if (debug)

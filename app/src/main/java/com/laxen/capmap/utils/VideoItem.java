@@ -10,7 +10,7 @@ public class VideoItem {
 
     }
 
-    public VideoItem(String latitude, String longitude, String videoUrl) {
+    public VideoItem(String latitude, String longitude, String url) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.url = url;

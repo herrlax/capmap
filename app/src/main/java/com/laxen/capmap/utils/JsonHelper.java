@@ -21,10 +21,10 @@ public class JsonHelper {
         Set<VideoItem> set = new HashSet<>();
         Gson gson = new Gson();
 
-
         for (int i=0; i<jsonArray.length(); i++) {
 
             try{
+                Log.d("app", "converting vegetarian : " + jsonArray.get(i).toString());
                 VideoItem videoItem = gson.fromJson(jsonArray.get(i).toString(), VideoItem.class);
                 set.add(videoItem);
             } catch (JSONException e) {

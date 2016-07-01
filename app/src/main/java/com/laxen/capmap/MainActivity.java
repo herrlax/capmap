@@ -361,20 +361,20 @@ public class MainActivity extends AppCompatActivity
         DownloadManager manager = new DownloadManager(this);
         manager.setOnResponseListener(this);
         manager.setOnErrorListener(this);
-        manager.setGetUrl("http://malmqvist.it/api");
+        manager.setGetUrl("http://10.1.0.4:3000/videos.json");
         manager.fetchData();
     }
 
     @Override
     public void onResponse(JSONArray response) {
 
-        // adds the dummy data to map
-        addToMap(JsonHelper.jsonArrayToSet(response));
-
-        // adds the fetched data to map
         for(VideoItem item : JsonHelper.jsonArrayToSet(response)){
             Log.d("app", item.toString());
         }
+
+        // adds the dummy data to map
+        addToMap(JsonHelper.jsonArrayToSet(response));
+
     }
 
     @Override
@@ -393,10 +393,10 @@ public class MainActivity extends AppCompatActivity
         urlMap.clear();
 
         for(VideoItem item : items) {
-            String key = item.getLat()+ ";" + item.getLon();
-            urlMap.put(key, item.getVideoUrl());
+            String key = item.getLatitude()+ ";" + item.getLongitude();
+            urlMap.put(key, item.getUrl());
             map.addMarker(new MarkerOptions()
-                    .position(new LatLng(item.getLat(), item.getLon()))
+                    .position(new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude())))
                     .title(key));
         }
     }

@@ -4,38 +4,37 @@ package com.laxen.capmap.utils;
  * Created by laxen on 6/28/16.
  */
 public class VideoItem {
-    private Double lat, lon;
-    private String videoUrl;
+    private String latitude, longitude, url;
 
     public VideoItem() {
 
     }
 
-    public VideoItem(Double lat, Double lon, String videoUrl) {
-        this.lat = lat;
-        this.lon = lon;
-        this.videoUrl = videoUrl;
+    public VideoItem(String latitude, String longitude, String videoUrl) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.url = url;
     }
 
 
-    public Double getLat() {
-        return lat;
+    public String getLatitude() {
+        return latitude;
     }
 
-    public Double getLon() {
-        return lon;
+    public String getLongitude() {
+        return longitude;
     }
 
-    public String getVideoUrl() {
-        return videoUrl;
+    public String getUrl() {
+        return url;
     }
 
     @Override
     public String toString() {
         return "VideoItem{" +
-                "lat=" + lat +
-                ", lon='" + lon +
-                ", videoUrl=" + videoUrl +
+                "url=" + url +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
                 '}';
     }
 }

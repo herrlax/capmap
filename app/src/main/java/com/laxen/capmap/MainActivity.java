@@ -211,6 +211,7 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
         intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 5); // limits time of video to 5 sec
 
         if(saver == null ) {
             saver = new MediaSaver();

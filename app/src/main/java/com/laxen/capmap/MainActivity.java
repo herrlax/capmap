@@ -22,7 +22,6 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Toast;
 
-import com.android.volley.Network;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -50,7 +49,6 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
-        GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
         GoogleMap.OnMarkerClickListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -160,7 +158,6 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
 
         map = googleMap;
-        map.setOnMyLocationButtonClickListener(this);
         map.setOnMarkerClickListener(this);
         requestLocation();
 
@@ -223,10 +220,6 @@ public class MainActivity extends AppCompatActivity
         startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
     }
 
-    @Override
-    public boolean onMyLocationButtonClick() {
-        return false;
-    }
 
 
     /**
@@ -439,13 +432,7 @@ public class MainActivity extends AppCompatActivity
         // gets url to video from location
         String url = urlMap.get(locationString);
 
-        Log.d("app", "URL TO PLAY: " + url);
-
-        if(url == null || url.equals("")) {
-            if (debug)
-                Toast.makeText(MainActivity.this, "Nothing's there :o", Toast.LENGTH_SHORT).show();
-
-        } else {
+        if(url != null && !url.equals("")) {
             videoUri = Uri.parse(url);
 
             videoFragment.setVideoUri(Uri.parse(url));
@@ -473,8 +460,10 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Stops the connection to google play services
+     * This is run when the app is closed / hidden
      */
     protected void onStop() {
+        Log.w("app", "onStop()");
         apiClient.disconnect();
         super.onStop();
     }
@@ -519,6 +508,24 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Memory optimization
+     */
+    @Override
+    public void onTrimMemory (int level) {
+        super.onTrimMemory(level);
+
+        Log.d("app", level+ "");
+
+        // when app's UI is hidden
+        if(level == TRIM_MEMORY_UI_HIDDEN) {
+            map.stopAnimation(); // stop animation of map
+
+        }
+
+    }
+
+    // when the orientation is changed..
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);

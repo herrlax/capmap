@@ -387,7 +387,7 @@ public class MainActivity extends AppCompatActivity
     // on fail response from download manager
     @Override
     public void onErrorResponse(VolleyError error) {
-        Log.d("app", error.getMessage());
+        Log.e("app", error.getMessage()+"");
         Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
     }
 

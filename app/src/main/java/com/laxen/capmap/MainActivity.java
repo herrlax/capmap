@@ -43,8 +43,6 @@ import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
@@ -73,9 +71,6 @@ public class MainActivity extends AppCompatActivity
     // location of the device
     private Location location;
 
-    // last clicked location
-    private String locationString;
-
     // google maps
     private GoogleMap map;
     private MapFragment mMapFragment;
@@ -86,9 +81,6 @@ public class MainActivity extends AppCompatActivity
     // captured video to be added to map
     private Uri videoUri;
 
-    // Maps with all uris and latlongs
-    private Map<String, String> urlMap;
-
     // fragment for displaying video
     VideoFragment videoFragment = new VideoFragment();
 
@@ -96,7 +88,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
 
         if(orienChanged) {
-            Log.d("app", "YEA");
+
             videoFragment.setVideoUri(videoUri);
 
             FragmentTransaction transaction;
@@ -125,8 +117,14 @@ public class MainActivity extends AppCompatActivity
             });
 
             saver = new MediaSaver();
-            urlMap = new HashMap<>();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        this.fetchData();
     }
 
     public void initGooglePlayServices() {
@@ -160,13 +158,6 @@ public class MainActivity extends AppCompatActivity
         map = googleMap;
         map.setOnMarkerClickListener(this);
         requestLocation();
-
-
-        // for testing
-        if (debug) {
-            LatLng SWEDEN = new LatLng(62.2315, 16.1932);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(SWEDEN, 4.5f));
-        }
 
         fetchData();
     }
@@ -342,7 +333,7 @@ public class MainActivity extends AppCompatActivity
         UploadManager manager = new UploadManager(this);
         manager.setOnResponseListener(this);
         manager.setonErrorResponseListener(this);
-        manager.setPutUrl("http://10.1.0.4:3000/videos");
+        manager.setPutUrl(getString(R.string.server_url_put));
         manager.setLat(lat);
         manager.setLon(lon);
 
@@ -355,7 +346,7 @@ public class MainActivity extends AppCompatActivity
         DownloadManager manager = new DownloadManager(this);
         manager.setOnResponseListener(this);
         manager.setOnErrorListener(this);
-        manager.setGetUrl("http://10.1.0.4:3000/videos.json");
+        manager.setGetUrl(getString(R.string.server_url_get));
         manager.fetchData();
     }
 
@@ -388,17 +379,10 @@ public class MainActivity extends AppCompatActivity
     // adds a set of video items to the map as markers
     public void addToMap(Set<VideoItem> items) {
 
-        if(urlMap == null)
-            urlMap = new HashMap<>();
-
-        urlMap.clear();
-
         for(VideoItem item : items) {
-            String key = item.getLatitude()+ ";" + item.getLongitude();
-            urlMap.put(key, item.getUrl());
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude())))
-                    .title(key));
+                    .title(item.getUrl())); // sets video url as title for playback
         }
     }
 
@@ -426,24 +410,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        // gets the locationString of the marker (i.e the title)
-        locationString = marker.getTitle();
 
-        // gets url to video from location
-        String url = urlMap.get(locationString);
+        // the video url is bound to the title
+        String url = marker.getTitle();
 
-        if(url != null && !url.equals("")) {
-            videoUri = Uri.parse(url);
+        videoUri = Uri.parse(url);
+        videoFragment.setVideoUri(Uri.parse(url));
 
-            videoFragment.setVideoUri(Uri.parse(url));
-
-            FragmentTransaction transaction;
-
-            transaction = this.getFragmentManager().beginTransaction();
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
-            transaction.commit();
-        }
+        FragmentTransaction transaction = this.getFragmentManager().beginTransaction();
+        
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
+        transaction.commit();
 
         return true;
     }

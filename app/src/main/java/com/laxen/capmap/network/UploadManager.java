@@ -62,7 +62,7 @@ public class UploadManager {
         try {
 
             // create the different parts of the output stream
-            buildParts(dOut, file, uri.toString());
+            buildParts(dOut, file);
 
             // pass constructed byte array from outputstream to multipart body
             multipartBody = bOut.toByteArray();
@@ -95,11 +95,14 @@ public class UploadManager {
     }
 
     // constructs the actual put request
-    private void buildParts(DataOutputStream dOut, byte[] file, String filename) throws IOException {
+    private void buildParts(DataOutputStream dOut, byte[] file) throws IOException {
 
         buildTextPart(dOut, "latitude", lat+"");
         buildTextPart(dOut, "longitude", lon+"");
-        buildFilePart(dOut, file, filename);
+
+        // sets filename to lat + ":" + lon + ".mp4" in order to directly find video on server
+        // via the lat lon name
+        buildFilePart(dOut, file, lat + ":" + lon + ".mp4");
 
         // send multipart form data necesssary after text and file data
         dOut.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);

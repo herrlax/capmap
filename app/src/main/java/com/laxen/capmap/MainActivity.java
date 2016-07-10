@@ -14,7 +14,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,8 +40,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.laxen.capmap.network.DownloadManager;
 import com.laxen.capmap.network.UploadManager;
+import com.laxen.capmap.tabs.MapFragmentTab;
+import com.laxen.capmap.tabs.SlidingTabLayout;
 import com.laxen.capmap.utils.JsonHelper;
 import com.laxen.capmap.utils.VideoItem;
+import com.laxen.capmap.utils.ViewPagerAdapter;
 
 import org.json.JSONArray;
 
@@ -53,7 +58,8 @@ public class MainActivity extends AppCompatActivity
         GoogleApiClient.OnConnectionFailedListener,
         SurfaceHolder.Callback,
         Response.Listener,
-        Response.ErrorListener{
+        Response.ErrorListener,
+        MapFragmentTab.MapFragmentTabListener{
 
 
     private boolean debug = true;
@@ -84,26 +90,27 @@ public class MainActivity extends AppCompatActivity
     // fragment for displaying video
     VideoFragment videoFragment = new VideoFragment();
 
+    // Toolbar toolbar;
+    ViewPagerAdapter adapter;
+    SlidingTabLayout tabs;
+    ViewPager pager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        // if orienChanged == True, then a wide video has been clicked
+        // causing the screen to change orientation -> this is not triggered
+        // if the user rotates the screen!
         if(orienChanged) {
-
-            videoFragment.setVideoUri(videoUri);
-
-            FragmentTransaction transaction;
-
-            transaction = this.getFragmentManager().beginTransaction();
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
-            transaction.commit();
+            playVideoInLandscape();
         } else {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_main);
+            getSupportActionBar().hide();
+
+            initSlidingTabs();
 
             initGooglePlayServices();
-
-            createMap();
 
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.setOnClickListener(new View.OnClickListener() {
@@ -118,6 +125,18 @@ public class MainActivity extends AppCompatActivity
 
             saver = new MediaSaver();
         }
+    }
+
+    // triggered when a video has caused a screen rotation
+    public void playVideoInLandscape() {
+        videoFragment.setVideoUri(videoUri);
+
+        FragmentTransaction transaction;
+
+        transaction = this.getFragmentManager().beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(R.id.fragmentcontainer, videoFragment).addToBackStack("videoFragment");
+        transaction.commit();
     }
 
     @Override
@@ -138,8 +157,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-    public void createMap() {
+    @Override
+    public void onMapFragmentCreated() {
 
         mMapFragment = MapFragment.newInstance();
 
@@ -149,7 +168,6 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.commit();
 
         mMapFragment.getMapAsync(this);
-
     }
 
     @Override
@@ -418,9 +436,9 @@ public class MainActivity extends AppCompatActivity
         videoFragment.setVideoUri(Uri.parse(url));
 
         FragmentTransaction transaction = this.getFragmentManager().beginTransaction();
-        
+
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction.add(R.id.container, videoFragment).addToBackStack("videoFragment");
+        transaction.add(R.id.fragmentcontainer, videoFragment).addToBackStack("videoFragment");
         transaction.commit();
 
         return true;
@@ -452,7 +470,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        requestLocation();
+
     }
 
     /**
@@ -514,4 +532,35 @@ public class MainActivity extends AppCompatActivity
             lastOrientation = orientation ;
         }
     }
+
+    // inits the sliding tabs
+    public void initSlidingTabs() {
+
+        adapter = new ViewPagerAdapter(getSupportFragmentManager(), 2);
+        adapter.setContext(this);
+        adapter.initFragments(this);
+
+        // sets pager for sliding tabs
+        pager = (ViewPager) findViewById(R.id.pager);
+        pager.setAdapter(adapter);
+
+        // tabs for list and map
+        tabs = (SlidingTabLayout) findViewById(R.id.tabs);
+        tabs.setCustomTabView(R.layout.custom_tab, 0);
+        // evens out the space between the tabs
+        tabs.setDistributeEvenly(true);
+        // Setting the ViewPager For the SlidingTabsLayout
+        tabs.setViewPager(pager);
+
+        // colors the scroller
+        tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
+            @Override
+            public int getIndicatorColor(int position) {
+                return getResources().getColor(R.color.selector);
+            }
+        });
+
+        tabs.setVisibility(View.VISIBLE);
+    }
+
 }

@@ -23,7 +23,7 @@
             <com.makeramen.roundedimageview.RoundedImageView
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/cardBackground"
-                android:background="@color/grayBlue"
+                android:background="#03A9F4"
                 android:scaleType="fitXY"
                 android:padding="16dp"
                 android:layout_width="match_parent"
@@ -36,7 +36,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="275dp"
                 android:orientation="vertical"
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true">
@@ -61,7 +61,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/deleteButton"
-                        android:src="@android:drawable/ic_delete"
+                        android:src="@drawable/ic_clear_white_24dp"
                         android:background="#00ffffff"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true" />
@@ -73,13 +73,12 @@
                     android:layout_height="match_parent"
                     android:padding="16dp">
 
-
                     <TextView
                         android:id="@+id/viewsTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="623 views"
-                        android:textSize="21sp"
+                        android:textSize="16sp"
                         android:layout_alignParentStart="true" />
 
                     <TextView
@@ -95,7 +94,7 @@
                         android:id="@+id/PlayTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/colorAccent"
+                        android:textColor="@color/colorPlay"
                         android:text="Play"
                         android:textSize="21sp"
                         android:layout_alignParentBottom="true"

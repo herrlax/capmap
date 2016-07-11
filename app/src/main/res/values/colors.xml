@@ -2,11 +2,11 @@
 <resources>
     <color name="colorPrimary">#f44336</color>
     <color name="colorPrimaryDark">#e53935</color>
-    <color name="colorAccent">#FFAB00</color>
+    <color name="colorAccent">#F44336</color>
+    <color name="colorPlay">#FFAB00</color>
     <color name="selector">#fff</color>
     <color name="videoListBackground">#E0E0E0</color>
     <color name="colorRecyclerViewBackground">#fafafa</color>
     <color name="white">#ffffff</color>
     <color name="textColor">#424242</color>
-    <color name="grayBlue">#607D8B</color>
 </resources>

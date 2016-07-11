@@ -31,3 +31,5 @@ dependencies {
     compile 'com.makeramen:roundedimageview:2.2.1'
     compile project(path: ':volley2')
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -23,11 +23,11 @@
             <com.makeramen.roundedimageview.RoundedImageView
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/cardBackground"
-                android:background="#03A9F4"
+                android:background="#FF5252"
                 android:scaleType="fitXY"
                 android:padding="16dp"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="160dp"
                 app:riv_corner_radius_top_left="4dp"
                 app:riv_corner_radius_top_right="4dp"
                 app:riv_mutate_background="true"
@@ -36,15 +36,14 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="275dp"
+                android:layout_height="310dp"
                 android:orientation="vertical"
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true">
 
-
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
+                    android:layout_height="160dp"
                     android:padding="16dp">
 
                     <TextView
@@ -63,22 +62,27 @@
                         android:id="@+id/deleteButton"
                         android:src="@drawable/ic_clear_white_24dp"
                         android:background="#00ffffff"
+                        android:visibility="invisible"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true" />
 
-                    </RelativeLayout>
+                </RelativeLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
+                    android:layout_height="100dp"
+                    android:paddingTop="24dp"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:paddingBottom="16dp">
 
                     <TextView
                         android:id="@+id/viewsTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="@color/textColor"
                         android:text="623 views"
-                        android:textSize="16sp"
+                        android:textSize="24sp"
                         android:layout_alignParentStart="true" />
 
                     <TextView
@@ -88,18 +92,43 @@
                         android:text="2016-08-02 14:23"
                         android:textSize="14sp"
                         android:layout_alignParentBottom="true"
-                        android:layout_alignParentEnd="true" />
+                        android:layout_alignParentStart="true" />
+
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/dividerGray">
+
+                </View>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:padding="0dp"
+                    android:layout_height="wrap_content">
 
                     <TextView
-                        android:id="@+id/PlayTextView"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/textView"
+                        android:padding="8dp"
+                        android:layout_width="100dp"
+                        android:textAlignment="center"
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorPlay"
                         android:text="Play"
-                        android:textSize="21sp"
-                        android:layout_alignParentBottom="true"
-                        android:layout_alignStart="@+id/viewsTextView" />
+                        android:textSize="21sp" />
 
+                    <TextView
+                        android:id="@+id/textView2"
+                        android:padding="8dp"
+                        android:layout_width="100dp"
+                        android:textAlignment="center"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorPlay"
+                        android:text="Remove"
+                        android:textSize="21sp"
+                        android:layout_alignBottom="@+id/textView"
+                        android:layout_toEndOf="@+id/textView" />
 
                 </RelativeLayout>
             </LinearLayout>

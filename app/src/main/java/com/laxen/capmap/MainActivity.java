@@ -16,7 +16,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,7 +26,12 @@ import android.widget.Toast;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -40,6 +44,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.laxen.capmap.network.DownloadManager;
 import com.laxen.capmap.network.UploadManager;
+import com.laxen.capmap.tabs.ListFragmentTab;
 import com.laxen.capmap.tabs.MapFragmentTab;
 import com.laxen.capmap.tabs.SlidingTabLayout;
 import com.laxen.capmap.utils.JsonHelper;
@@ -59,7 +64,9 @@ public class MainActivity extends AppCompatActivity
         SurfaceHolder.Callback,
         Response.Listener,
         Response.ErrorListener,
-        MapFragmentTab.MapFragmentTabListener{
+        MapFragmentTab.MapFragmentTabListener,
+        ListFragmentTab.ListFragmentTabListener,
+        View.OnClickListener {
 
 
     private boolean debug = true;
@@ -70,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
+    private static final int RC_SIGN_IN = 300;
 
     // client for handling calls to the google play services api
     private GoogleApiClient apiClient;
@@ -89,6 +97,8 @@ public class MainActivity extends AppCompatActivity
 
     // fragment for displaying video
     VideoFragment videoFragment = new VideoFragment();
+
+    private GoogleSignInOptions gso;
 
     // Toolbar toolbar;
     ViewPagerAdapter adapter;
@@ -123,6 +133,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
+
             saver = new MediaSaver();
         }
     }
@@ -147,14 +158,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initGooglePlayServices() {
+
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
         // Create an instance of GoogleAPIClient.
         if (apiClient == null) {
             apiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
+                    .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                     .build();
         }
+
     }
 
     @Override
@@ -322,6 +343,13 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            handleSignInResult(result);
+        }
+
 
         if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
@@ -563,4 +591,34 @@ public class MainActivity extends AppCompatActivity
         tabs.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.sign_in_button:
+                signIn();
+                break;
+        }
+    }
+
+    private void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    private void handleSignInResult(GoogleSignInResult result) {
+        Log.d("app", "handleSignInResult:" + result.isSuccess());
+
+        if (result.isSuccess()) {
+            // Signed in successfully, show authenticated UI.
+            GoogleSignInAccount acct = result.getSignInAccount();
+            Toast.makeText(MainActivity.this, "Welcome, " + acct.getEmail(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onListFragmentTabCreated(View signInButton) {
+        ((SignInButton) signInButton).setSize(SignInButton.SIZE_STANDARD);
+        ((SignInButton) signInButton).setScopes(gso.getScopeArray());
+        signInButton.setOnClickListener(this);
+    }
 }

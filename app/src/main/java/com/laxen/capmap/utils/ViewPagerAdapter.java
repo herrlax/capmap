@@ -43,6 +43,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter{
 
     public void initListFragment() {
         listFragmentTab = new ListFragmentTab();
+        listFragmentTab.subscribe(context);
     }
 
     public void initMapTabFragment(MapFragmentTab.MapFragmentTabListener listener) {

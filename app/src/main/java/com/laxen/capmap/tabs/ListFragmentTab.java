@@ -9,9 +9,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.SignInButton;
 import com.laxen.capmap.R;
 import com.laxen.capmap.utils.VideoItem;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,6 +24,12 @@ public class ListFragmentTab extends Fragment {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+
+    public interface ListFragmentTabListener {
+        void onListFragmentTabCreated(View view);
+    }
+
+    ArrayList<ListFragmentTabListener> subs;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -42,8 +50,19 @@ public class ListFragmentTab extends Fragment {
         mAdapter = new ListFragmentAdapter(dummyData, getContext());
         mRecyclerView.setAdapter(mAdapter);
 
-
+        if(subs != null) {
+            for (ListFragmentTabListener sub : subs) {
+                sub.onListFragmentTabCreated(view.findViewById(R.id.sign_in_button));
+            }
+        }
         return view;
     }
 
+    public void subscribe(ListFragmentTabListener listener) {
+        if (subs == null) {
+            subs = new ArrayList<>();
+        }
+
+        subs.add(listener);
+    }
 }

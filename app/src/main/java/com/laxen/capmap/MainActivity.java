@@ -543,7 +543,9 @@ public class MainActivity extends AppCompatActivity
 
         // when app's UI is hidden
         if(level == TRIM_MEMORY_UI_HIDDEN) {
-            map.stopAnimation(); // stop animation of map
+            if(map != null) {
+                map.stopAnimation(); // stop animation of map
+            }
 
         }
 

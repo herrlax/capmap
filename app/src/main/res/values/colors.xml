@@ -5,7 +5,7 @@
     <color name="colorAccent">#F44336</color>
     <color name="colorPlay">#FFAB00</color>
     <color name="selector">#fff</color>
-    <color name="videoListBackground">#E0E0E0</color>
+    <color name="videoListBackground">#EEEEEE</color>
     <color name="dividerGray">#EEEEEE</color>
     <color name="colorRecyclerViewBackground">#fafafa</color>
     <color name="white">#ffffff</color>

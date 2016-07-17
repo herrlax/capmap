@@ -36,33 +36,13 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter{
         this.context = context;
     }
 
-    public void initFragments(MapFragmentTab.MapFragmentTabListener listener) {
-        initListFragment();
-        initMapTabFragment(listener);
-    }
-
-    public void initListFragment() {
-        listFragmentTab = new ListFragmentTab();
-        listFragmentTab.subscribe(context);
-    }
-
-    public void initMapTabFragment(MapFragmentTab.MapFragmentTabListener listener) {
-        mapFragmentTab = new MapFragmentTab();
-        mapFragmentTab.subscribe(listener);
-    }
-
-
     @Override
     public Fragment getItem(int pos) {
 
         switch (pos){
             case 0:
-                if (mapFragmentTab == null)
-                    initMapTabFragment(context);
                 return mapFragmentTab;
             case 1:
-                if (listFragmentTab == null)
-                    initListFragment();
                 return listFragmentTab;
         }
 
@@ -89,4 +69,11 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter{
         return spannableString;
     }
 
+    public void setListFragmentTab(ListFragmentTab listFragmentTab) {
+        this.listFragmentTab = listFragmentTab;
+    }
+
+    public void setMapFragmentTab(MapFragmentTab mapFragmentTab) {
+        this.mapFragmentTab = mapFragmentTab;
+    }
 }

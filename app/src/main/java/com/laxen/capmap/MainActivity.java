@@ -1,6 +1,5 @@
 package com.laxen.capmap;
 
-import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -34,39 +32,24 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.laxen.capmap.network.DownloadManager;
 import com.laxen.capmap.network.UploadManager;
 import com.laxen.capmap.tabs.ListFragmentTab;
 import com.laxen.capmap.tabs.MapFragmentTab;
 import com.laxen.capmap.tabs.SlidingTabLayout;
-import com.laxen.capmap.utils.JsonHelper;
-import com.laxen.capmap.utils.VideoItem;
+import com.laxen.capmap.utils.PermissionHandler;
 import com.laxen.capmap.utils.ViewPagerAdapter;
 
-import org.json.JSONArray;
-
-import java.util.Set;
-
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback,
-        ActivityCompat.OnRequestPermissionsResultCallback,
-        GoogleMap.OnMarkerClickListener,
+        implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         SurfaceHolder.Callback,
         Response.Listener,
         Response.ErrorListener,
-        MapFragmentTab.MapFragmentTabListener,
         ListFragmentTab.ListFragmentTabListener,
-        View.OnClickListener {
+        View.OnClickListener,
+        PermissionHandler.PermissionHandlerListener,
+        ActivityCompat.OnRequestPermissionsResultCallback{
 
 
     private boolean debug = true;
@@ -76,18 +59,19 @@ public class MainActivity extends AppCompatActivity
 
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
+    private static final int CAMERA_ACCESS_GRANTED = 3;
+    private static final int LOCATION_ACCESS_GRANTED = 4;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
     private static final int RC_SIGN_IN = 300;
+
+    private PermissionHandler permissionHandler;
 
     // client for handling calls to the google play services api
     private GoogleApiClient apiClient;
 
-    // location of the device
-    private Location location;
-
-    // google maps
-    private GoogleMap map;
-    private MapFragment mMapFragment;
+    // fragments
+    private MapFragmentTab mapFragmentTab;
+    private ListFragmentTab listFragmentTab;
 
     // Util class for storing data on device
     private MediaSaver saver;
@@ -111,13 +95,17 @@ public class MainActivity extends AppCompatActivity
         // if orienChanged == True, then a wide video has been clicked
         // causing the screen to change orientation -> this is not triggered
         // if the user rotates the screen!
-        if(orienChanged) {
+        if (orienChanged) {
             playVideoInLandscape();
         } else {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_main);
             getSupportActionBar().hide();
 
+            permissionHandler = PermissionHandler.getInstance(this);
+            permissionHandler.subscribe(this);
+
+            initFragments();
             initSlidingTabs();
 
             initGooglePlayServices();
@@ -126,7 +114,7 @@ public class MainActivity extends AppCompatActivity
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    requestCamera();
+                    permissionHandler.requestCamera();
 
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
@@ -136,6 +124,25 @@ public class MainActivity extends AppCompatActivity
 
             saver = new MediaSaver();
         }
+    }
+
+    public void initFragments() {
+        mapFragmentTab = new MapFragmentTab();
+        listFragmentTab = new ListFragmentTab();
+        listFragmentTab.subscribe(this);
+    }
+
+    public void playVideo(String url) {
+
+        videoUri = Uri.parse(url);
+        videoFragment.setVideoUri(Uri.parse(url));
+
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(R.id.fragmentcontainer, videoFragment).addToBackStack("videoFragment");
+        transaction.commit();
+
     }
 
     // triggered when a video has caused a screen rotation
@@ -154,7 +161,7 @@ public class MainActivity extends AppCompatActivity
     public void onResume() {
         super.onResume();
 
-        this.fetchData();
+        //this.fetchData();
     }
 
     public void initGooglePlayServices() {
@@ -178,61 +185,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    @Override
-    public void onMapFragmentCreated() {
-
-        mMapFragment = MapFragment.newInstance();
-
-        FragmentTransaction fragmentTransaction =
-                getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.container, mMapFragment);
-        fragmentTransaction.commit();
-
-        mMapFragment.getMapAsync(this);
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
-        map = googleMap;
-        map.setOnMarkerClickListener(this);
-        requestLocation();
-
-        fetchData();
-    }
-
-    /**
-     * Enables the My Location layer if the fine location permission has been granted.
-     */
-    private void requestCamera() {
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.CAMERA)) {
-
-                // if the user has denied the permission before
-
-                // request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA},
-                        MY_PERMISSIONS_REQUEST_ACCESS_CAMERA);
-
-            } else {
-
-                // request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA},
-                        MY_PERMISSIONS_REQUEST_ACCESS_CAMERA);
-
-            }
-
-        } else {
-            startCamera();
-        }
-    }
-
     public void startCamera() {
         //create new Intent
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
@@ -240,7 +192,7 @@ public class MainActivity extends AppCompatActivity
         intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
         intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 5); // limits time of video to 5 sec
 
-        if(saver == null ) {
+        if (saver == null) {
             saver = new MediaSaver();
         }
 
@@ -248,94 +200,6 @@ public class MainActivity extends AppCompatActivity
 
         // start the Video Capture Intent
         startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
-    }
-
-
-
-    /**
-     * Enables the My Location layer if the fine location permission has been granted.
-     */
-    private void requestLocation() {
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // if the user has denied the permission before
-
-                // request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-            } else {
-
-                // request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-            }
-
-        } else {
-
-            // sets location
-            location = LocationServices.FusedLocationApi.getLastLocation(apiClient);
-
-            // zooms in on current location
-            if(location != null) {
-                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
-                map.animateCamera(cameraUpdate);
-                map.setMyLocationEnabled(true);
-            }
-        }
-    }
-
-    // Handles all permissions
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // retry ..
-                    requestLocation();
-
-                } else {
-
-                    // permission denied
-                    Toast.makeText(MainActivity.this, "Location is needed to post videos :<",
-                            Toast.LENGTH_SHORT).show();
-
-                }
-                return;
-            }
-            case MY_PERMISSIONS_REQUEST_ACCESS_CAMERA: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    startCamera();
-
-                } else {
-
-                    // permission denied
-                    // permission granted
-                    Toast.makeText(MainActivity.this, "Function requires camera",
-                            Toast.LENGTH_SHORT).show();
-
-                }
-                return;
-            }
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
     }
 
     /**
@@ -356,6 +220,8 @@ public class MainActivity extends AppCompatActivity
 
                 // refresh current position
                 onStart();
+
+                Location location = mapFragmentTab.getLocation();
 
                 if (location != null) {
                     double lat = location.getLatitude();
@@ -387,28 +253,13 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    // fetches data from server
-    public void fetchData() {
-        DownloadManager manager = new DownloadManager(this);
-        manager.setOnResponseListener(this);
-        manager.setOnErrorListener(this);
-        manager.setGetUrl(getString(R.string.server_url_get));
-        manager.fetchData();
-    }
-
     @Override
     public void onResponse(Object response) {
 
-        // if response from download manager
-        if(response.getClass() == JSONArray.class) {
-            addToMap(JsonHelper.jsonArrayToSet((JSONArray) response));
-            return;
-        }
-
         // if response from upload manager
-        if(response.getClass() == NetworkResponse.class) {
+        if (response.getClass() == NetworkResponse.class) {
             Toast.makeText(MainActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
-            fetchData();
+            mapFragmentTab.fetchData();
             return;
         }
 
@@ -417,20 +268,10 @@ public class MainActivity extends AppCompatActivity
     // on fail response from download manager
     @Override
     public void onErrorResponse(VolleyError error) {
-        Log.e("app", error.getMessage()+"");
+        Log.e("app", error.getMessage() + "");
         Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
     }
 
-
-    // adds a set of video items to the map as markers
-    public void addToMap(Set<VideoItem> items) {
-
-        for(VideoItem item : items) {
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude())))
-                    .title(item.getUrl())); // sets video url as title for playback
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -452,24 +293,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-
-        // the video url is bound to the title
-        String url = marker.getTitle();
-
-        videoUri = Uri.parse(url);
-        videoFragment.setVideoUri(Uri.parse(url));
-
-        FragmentTransaction transaction = this.getFragmentManager().beginTransaction();
-
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction.add(R.id.fragmentcontainer, videoFragment).addToBackStack("videoFragment");
-        transaction.commit();
-
-        return true;
     }
 
 
@@ -512,7 +335,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-        if(debug) {
+        if (debug) {
             Toast.makeText(MainActivity.this, "Connection refused :<", Toast.LENGTH_SHORT).show();
         }
     }
@@ -532,34 +355,15 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    /**
-     * Memory optimization
-     */
-    @Override
-    public void onTrimMemory (int level) {
-        super.onTrimMemory(level);
-
-        Log.d("app", level+ "");
-
-        // when app's UI is hidden
-        if(level == TRIM_MEMORY_UI_HIDDEN) {
-            if(map != null) {
-                map.stopAnimation(); // stop animation of map
-            }
-
-        }
-
-    }
-
     // when the orientation is changed..
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
         int orientation = newConfig.orientation;
-        if(orientation != lastOrientation){
-            orienChanged  = true;
-            lastOrientation = orientation ;
+        if (orientation != lastOrientation) {
+            orienChanged = true;
+            lastOrientation = orientation;
         }
     }
 
@@ -568,7 +372,8 @@ public class MainActivity extends AppCompatActivity
 
         adapter = new ViewPagerAdapter(getSupportFragmentManager(), 2);
         adapter.setContext(this);
-        adapter.initFragments(this);
+        adapter.setListFragmentTab(listFragmentTab);
+        adapter.setMapFragmentTab(mapFragmentTab);
 
         // sets pager for sliding tabs
         pager = (ViewPager) findViewById(R.id.pager);
@@ -622,5 +427,67 @@ public class MainActivity extends AppCompatActivity
         ((SignInButton) signInButton).setSize(SignInButton.SIZE_STANDARD);
         ((SignInButton) signInButton).setScopes(gso.getScopeArray());
         signInButton.setOnClickListener(this);
+    }
+
+    @Override
+    public void onPermissionResponse(int responseCode) {
+
+        switch (responseCode) {
+            case CAMERA_ACCESS_GRANTED:
+                startCamera();
+                return;
+            case LOCATION_ACCESS_GRANTED:
+                mapFragmentTab.setLocation();
+                return;
+        }
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        return apiClient;
+    }
+
+
+    // Response from PermissionHandler when popups about permissions are displayed..
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
+
+        Log.d("app", "got a response! yiha!");
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // retry ..
+                    permissionHandler.requestLocation();
+
+                } else {
+                    Toast.makeText(MainActivity.this,
+                            "Location access is needed to display your location",
+                            Toast.LENGTH_LONG).show();
+
+                }
+                return;
+            }
+            case MY_PERMISSIONS_REQUEST_ACCESS_CAMERA: {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    permissionHandler.requestCamera();
+
+                } else {
+
+                    Toast.makeText(MainActivity.this,
+                        "Camera access is needed to use this functionality",
+                        Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+        }
     }
 }

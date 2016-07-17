@@ -15,26 +15,10 @@ public class RequestHandler {
     private static RequestHandler instance;
     private RequestQueue queue;
     private static Context context;
-    private ImageLoader mImageLoader;
 
     private RequestHandler(final Context context) {
         this.context = context;
         queue = getRequestQueue();
-
-        /*mImageLoader = new ImageLoader(queue,
-                new ImageLoader.ImageCache() {
-                    private final LruBitmapCache cache = new LruBitmapCache(context);
-
-                    @Override
-                    public Bitmap getBitmap(String url) {
-                        return cache.get(url);
-                    }
-
-                    @Override
-                    public void putBitmap(String url, Bitmap bitmap) {
-                        cache.put(url, bitmap);
-                    }
-                });*/
 
     }
 

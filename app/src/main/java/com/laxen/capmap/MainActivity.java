@@ -32,12 +32,17 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.laxen.capmap.network.DownloadManager;
 import com.laxen.capmap.network.UploadManager;
 import com.laxen.capmap.tabs.ListFragmentTab;
 import com.laxen.capmap.tabs.MapFragmentTab;
 import com.laxen.capmap.tabs.SlidingTabLayout;
 import com.laxen.capmap.utils.PermissionHandler;
 import com.laxen.capmap.utils.ViewPagerAdapter;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
         implements
@@ -53,6 +58,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private boolean debug = true;
+    private boolean isSignedIn = false;
 
     boolean orienChanged = false;
     int lastOrientation = 0;
@@ -72,6 +78,7 @@ public class MainActivity extends AppCompatActivity
     // fragments
     private MapFragmentTab mapFragmentTab;
     private ListFragmentTab listFragmentTab;
+    private View signInCard;
 
     // Util class for storing data on device
     private MediaSaver saver;
@@ -169,6 +176,7 @@ public class MainActivity extends AppCompatActivity
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestServerAuthCode(getString(R.string.server_client_id))
                 .requestEmail()
                 .build();
 
@@ -256,6 +264,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResponse(Object response) {
 
+        Log.d("app", "got response " + response.toString());
+
         // if response from upload manager
         if (response.getClass() == NetworkResponse.class) {
             Toast.makeText(MainActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
@@ -293,66 +303,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-
-    /**
-     * Starts the connection to google play services
-     */
-    protected void onStart() {
-        Log.e("app", "onStart()");
-        apiClient.connect();
-        super.onStart();
-    }
-
-    /**
-     * Stops the connection to google play services
-     * This is run when the app is closed / hidden
-     */
-    protected void onStop() {
-        Log.w("app", "onStop()");
-        apiClient.disconnect();
-        super.onStop();
-    }
-
-
-    /**
-     * Response from onStart()
-     */
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    /**
-     * Response from onStop() or whenever connection is closed
-     */
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-        if (debug) {
-            Toast.makeText(MainActivity.this, "Connection refused :<", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-
     }
 
     // when the orientation is changed..
@@ -419,14 +369,49 @@ public class MainActivity extends AppCompatActivity
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             Toast.makeText(MainActivity.this, "Welcome, " + acct.getEmail(), Toast.LENGTH_SHORT).show();
+            isSignedIn = true;
+            hideSignIn();
+
+            getSessionKey(acct);
         }
     }
 
+    public void getSessionKey(GoogleSignInAccount acct) {
+        DownloadManager manager = new DownloadManager(this);
+        manager.setOnResponseListener(this);
+        manager.setOnErrorListener(this);
+        manager.setGetUrl(getString(R.string.auth_callback));
+
+        Log.d("app", "googlesinginacc: " + acct.getServerAuthCode());
+
+        manager.setServerAuthCode(acct.getServerAuthCode());
+
+        manager.fetchData();
+    }
+
     @Override
-    public void onListFragmentTabCreated(View signInButton) {
-        ((SignInButton) signInButton).setSize(SignInButton.SIZE_STANDARD);
-        ((SignInButton) signInButton).setScopes(gso.getScopeArray());
+    public void onListFragmentTabCreated(View view) {
+        SignInButton signInButton = (SignInButton) view.findViewById(R.id.sign_in_button);
+
+        signInButton.setSize(SignInButton.SIZE_STANDARD);
+        signInButton.setScopes(gso.getScopeArray());
         signInButton.setOnClickListener(this);
+
+        signInCard = view.findViewById(R.id.card_view);
+
+        if(isSignedIn) {
+            hideSignIn();
+        } else {
+            showSignIn();
+        }
+    }
+
+    public void showSignIn() {
+        signInCard.setVisibility(View.VISIBLE);
+    }
+
+    public void hideSignIn() {
+        signInCard.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -489,5 +474,66 @@ public class MainActivity extends AppCompatActivity
                 return;
             }
         }
+    }
+
+
+
+    /**
+     * Starts the connection to google play services
+     */
+    protected void onStart() {
+        Log.e("app", "onStart()");
+        apiClient.connect();
+        super.onStart();
+    }
+
+    /**
+     * Stops the connection to google play services
+     * This is run when the app is closed / hidden
+     */
+    protected void onStop() {
+        Log.w("app", "onStop()");
+        apiClient.disconnect();
+        super.onStop();
+    }
+
+
+    /**
+     * Response from onStart()
+     */
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    /**
+     * Response from onStop() or whenever connection is closed
+     */
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+        if (debug) {
+            Toast.makeText(MainActivity.this, "Connection refused :<", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
     }
 }

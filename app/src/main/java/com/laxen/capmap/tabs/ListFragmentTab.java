@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.common.SignInButton;
 import com.laxen.capmap.R;
 import com.laxen.capmap.utils.VideoItem;
 
@@ -43,16 +42,16 @@ public class ListFragmentTab extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         List<VideoItem> dummyData = new LinkedList<>();
-        dummyData.add(new VideoItem("23.4", "32.2", ""));
+        /*dummyData.add(new VideoItem("23.4", "32.2", ""));
         dummyData.add(new VideoItem("64.4", "86.2", ""));
-        dummyData.add(new VideoItem("27.4", "12.2", ""));
+        dummyData.add(new VideoItem("27.4", "12.2", ""));*/
 
         mAdapter = new ListFragmentAdapter(dummyData, getContext());
         mRecyclerView.setAdapter(mAdapter);
 
         if(subs != null) {
             for (ListFragmentTabListener sub : subs) {
-                sub.onListFragmentTabCreated(view.findViewById(R.id.sign_in_button));
+                sub.onListFragmentTabCreated(view);
             }
         }
         return view;

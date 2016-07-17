@@ -114,7 +114,8 @@ public class MapFragmentTab extends Fragment
 
     public void setLocation() {
 
-        Log.d("app", "setting location..");
+        if(activity == null)
+            return;
 
         try {
             location = LocationServices.FusedLocationApi.getLastLocation(activity.getGoogleApiClient());

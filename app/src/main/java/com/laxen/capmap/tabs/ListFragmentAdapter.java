@@ -1,30 +1,31 @@
 package com.laxen.capmap.tabs;
 
 import android.content.Context;
-import android.os.Build;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.laxen.capmap.MainActivity;
 import com.laxen.capmap.R;
 import com.laxen.capmap.utils.VideoItem;
 
-import java.util.List;
 
 /**
  * Created by laxen on 7/11/16.
  */
 public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapter.ViewHolder> {
 
-    private List<VideoItem> videos;
-    private Context context;
+    private Object[] videos;
+    private MainActivity context;
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ListFragmentAdapter(List<VideoItem> videos, Context context) {
+    public ListFragmentAdapter(Object[] videos, MainActivity context) {
         this.context = context;
         this.videos = videos;
     }
@@ -39,12 +40,14 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final VideoItem videoItem = videos.get(position);
+        final VideoItem videoItem = (VideoItem) videos[position];
 
-        holder.cardView.setOnClickListener(new View.OnClickListener() {
+        Log.d("app", videoItem.toString());
+
+        holder.playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // todo display video from videoItem
+                context.playVideo(videoItem.getUrl());
             }
         });
 
@@ -56,13 +59,15 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
         });
 
         holder.timeStampTextView.setText("2016-04-02 10:33");
-        holder.locationTextView.setText("Sierra Nevada, CA, United States");
+        holder.locationTextView.setText("Lat: " + videoItem.getLatitude()
+                                        + ", Long: " + videoItem.getLongitude());
+        //holder.locationTextView.setText("Sierra Nevada, CA, United States");
 
     }
 
     @Override
     public int getItemCount() {
-        return videos.size();
+        return videos.length;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -70,7 +75,8 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
         protected TextView timeStampTextView;
         protected TextView locationTextView;
         protected TextView viewsTextView;
-        protected ImageButton deleteButton;
+        protected TextView deleteButton;
+        protected TextView playButton;
         protected CardView cardView;
         protected View cardBackground;
 
@@ -80,7 +86,8 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
             timeStampTextView = (TextView) v.findViewById(R.id.timeStampTextView);
             locationTextView = (TextView) v.findViewById(R.id.locationTextView);
             viewsTextView = (TextView) v.findViewById(R.id.viewsTextView);
-            deleteButton = (ImageButton) v.findViewById(R.id.deleteButton);
+            deleteButton = (TextView) v.findViewById(R.id.deleteButton);
+            playButton = (TextView) v.findViewById(R.id.playButton);
             cardView = (CardView) v.findViewById(R.id.card_view);
             cardBackground = v.findViewById(R.id.cardBackground);
 

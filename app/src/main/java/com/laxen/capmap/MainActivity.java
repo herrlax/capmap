@@ -280,6 +280,7 @@ public class MainActivity extends AppCompatActivity
         if (response.getClass() == NetworkResponse.class) {
             Toast.makeText(MainActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
             mapFragmentTab.fetchData();
+            listFragmentTab.fetchData();
             return;
         }
 

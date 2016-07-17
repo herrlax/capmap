@@ -28,6 +28,7 @@ public class UploadManager {
     private double lat;
     private double lon;
     private byte[] multipartBody;
+    private String sessionKey;
 
     private final int BUFFERSIZE = 1024;
 
@@ -99,6 +100,7 @@ public class UploadManager {
 
         buildTextPart(dOut, "latitude", lat+"");
         buildTextPart(dOut, "longitude", lon+"");
+        buildTextPart(dOut, "session_key", sessionKey);
 
         // sets filename to lat + ":" + lon + ".mp4" in order to directly find video on server
         // via the lat lon name
@@ -163,5 +165,9 @@ public class UploadManager {
 
     public void setLat(double lat) {
         this.lat = lat;
+    }
+
+    public void setSessionKey(String sessionKey) {
+        this.sessionKey = sessionKey;
     }
 }

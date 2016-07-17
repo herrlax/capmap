@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity
 
     private boolean debug = true;
     private boolean isSignedIn = false;
+    private String sessionKey = "";
 
     boolean orienChanged = false;
     int lastOrientation = 0;
@@ -254,6 +255,7 @@ public class MainActivity extends AppCompatActivity
         manager.setOnResponseListener(this);
         manager.setonErrorResponseListener(this);
         manager.setPutUrl(getString(R.string.server_url_put));
+        manager.setSessionKey(sessionKey);
         manager.setLat(lat);
         manager.setLon(lon);
 
@@ -265,6 +267,14 @@ public class MainActivity extends AppCompatActivity
     public void onResponse(Object response) {
 
         Log.d("app", "got response " + response.toString());
+
+        if(response.getClass() == JSONObject.class) {
+            try {
+                sessionKey = ((JSONObject) response).getString("session_key");
+            } catch (JSONException e) {
+                Log.e("app", "could not handle json object");
+            }
+        }
 
         // if response from upload manager
         if (response.getClass() == NetworkResponse.class) {

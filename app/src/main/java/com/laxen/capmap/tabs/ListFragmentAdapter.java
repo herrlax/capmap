@@ -59,9 +59,14 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
         });
 
         holder.timeStampTextView.setText("2016-04-02 10:33");
-        holder.locationTextView.setText("Lat: " + videoItem.getLatitude()
-                                        + ", Long: " + videoItem.getLongitude());
-        //holder.locationTextView.setText("Sierra Nevada, CA, United States");
+
+        if(!videoItem.getLongitude().equals("")) {
+            holder.locationTextView.setText(videoItem.getLocation());
+        } else {
+            holder.locationTextView.setText("Lat: " + videoItem.getLatitude()
+                + ", Long: " + videoItem.getLongitude());
+        }
+
 
     }
 

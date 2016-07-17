@@ -1,6 +1,8 @@
 package com.laxen.capmap;
 
+import android.Manifest;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -31,7 +33,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Places;
 import com.laxen.capmap.network.DownloadManager;
 import com.laxen.capmap.network.UploadManager;
 import com.laxen.capmap.tabs.ListFragmentTab;
@@ -54,7 +61,7 @@ public class MainActivity extends AppCompatActivity
         ListFragmentTab.ListFragmentTabListener,
         View.OnClickListener,
         PermissionHandler.PermissionHandlerListener,
-        ActivityCompat.OnRequestPermissionsResultCallback{
+        ActivityCompat.OnRequestPermissionsResultCallback {
 
 
     private boolean debug = true;
@@ -189,6 +196,9 @@ public class MainActivity extends AppCompatActivity
                     .addApi(LocationServices.API)
                     .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                     .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .addApi(Places.GEO_DATA_API)
+                    .addApi(Places.PLACE_DETECTION_API)
+                    .enableAutoManage(this, this)
                     .build();
         }
 
@@ -251,11 +261,35 @@ public class MainActivity extends AppCompatActivity
     // uploads a video file through the UploadManager
     public void uploadVideo(Uri uri, double lat, double lon) {
 
-        UploadManager manager = new UploadManager(this);
+        final UploadManager manager = new UploadManager(this);
         manager.setOnResponseListener(this);
         manager.setonErrorResponseListener(this);
         manager.setPutUrl(getString(R.string.server_url_put));
         manager.setSessionKey(sessionKey);
+
+        try {
+            PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+                    .getCurrentPlace(apiClient, null);
+            result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+                @Override
+                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
+
+                    String loc = "";
+
+                    for (PlaceLikelihood place : likelyPlaces) {
+                        loc = place.getPlace().getName().toString();
+                        break;
+                    }
+
+                    Log.d("app", "set locatioN: " + loc);
+                    manager.setLocation(loc);
+                    likelyPlaces.release();
+                }
+            });
+        } catch (SecurityException e) {
+            Log.e("app", "FAILED WITH PALCES");
+        }
+
         manager.setLat(lat);
         manager.setLon(lon);
 

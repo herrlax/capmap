@@ -27,6 +27,7 @@ public class UploadManager {
     private final String mimeType = "multipart/form-data;boundary=" + boundary;
     private double lat;
     private double lon;
+    private String location;
     private byte[] multipartBody;
     private String sessionKey;
 
@@ -100,6 +101,7 @@ public class UploadManager {
 
         buildTextPart(dOut, "latitude", lat+"");
         buildTextPart(dOut, "longitude", lon+"");
+        buildTextPart(dOut, "location", location);
         buildTextPart(dOut, "session_key", sessionKey);
 
         // sets filename to lat + ":" + lon + ".mp4" in order to directly find video on server
@@ -169,5 +171,9 @@ public class UploadManager {
 
     public void setSessionKey(String sessionKey) {
         this.sessionKey = sessionKey;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

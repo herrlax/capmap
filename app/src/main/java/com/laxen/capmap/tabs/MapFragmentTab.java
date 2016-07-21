@@ -119,6 +119,9 @@ public class MapFragmentTab extends Fragment
 
         try {
             location = LocationServices.FusedLocationApi.getLastLocation(activity.getGoogleApiClient());
+
+            Log.d("app", "Finding you on map: " + location);
+
             // zooms in on current location
             if(location != null) {
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());

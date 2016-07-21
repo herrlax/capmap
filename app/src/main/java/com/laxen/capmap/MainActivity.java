@@ -274,6 +274,8 @@ public class MainActivity extends AppCompatActivity
 
         manager.setPutUrl(putUrl + putSufix);
 
+        Log.d("app", "uploading to " + putUrl + putSufix + "...");
+
         try {
             PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
                     .getCurrentPlace(apiClient, null);
@@ -288,13 +290,14 @@ public class MainActivity extends AppCompatActivity
                         break;
                     }
 
-                    Log.d("app", "set location: " + loc);
+                    Log.d("app", "Setting location to " + loc);
+                    Toast.makeText(MainActivity.this, "Location: " + loc, Toast.LENGTH_LONG).show();
                     manager.setLocation(loc);
                     likelyPlaces.release();
                 }
             });
         } catch (SecurityException e) {
-            Log.e("app", "FAILED SETTING PLACES");
+            Log.e("app", "FAILED WITH PLACES API");
         }
 
         manager.setLat(lat);
@@ -307,7 +310,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResponse(Object response) {
 
-        Log.d("app", "got response " + response.toString());
+        Log.d("app", "Got response " + response.toString());
 
         if(response.getClass() == JSONObject.class) {
             try {
@@ -345,7 +348,7 @@ public class MainActivity extends AppCompatActivity
     // on fail response from download manager
     @Override
     public void onErrorResponse(VolleyError error) {
-        Log.e("app", error.getMessage() + "");
+        Log.e("app", error.networkResponse.statusCode + "");
         Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
     }
 

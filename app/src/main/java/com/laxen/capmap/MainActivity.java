@@ -305,6 +305,8 @@ public class MainActivity extends AppCompatActivity
         if(response.getClass() == JSONObject.class) {
             try {
                 sessionKey = ((JSONObject) response).getString("session_key");
+                listFragmentTab.setSessionKey(sessionKey);
+                listFragmentTab.fetchData();
             } catch (JSONException e) {
                 Log.e("app", "could not handle json object");
             }
@@ -314,7 +316,7 @@ public class MainActivity extends AppCompatActivity
         if (response.getClass() == NetworkResponse.class) {
             Toast.makeText(MainActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
             mapFragmentTab.fetchData();
-            listFragmentTab.fetchData();
+            //listFragmentTab.fetchData();
             return;
         }
 
@@ -425,13 +427,11 @@ public class MainActivity extends AppCompatActivity
         DownloadManager manager = new DownloadManager(this);
         manager.setOnResponseListener(this);
         manager.setOnErrorListener(this);
-        manager.setGetUrl(getString(R.string.auth_callback));
+        manager.setGetUrl(getString(R.string.auth_callback) + "?code=" + acct.getServerAuthCode());
 
         Log.d("app", "googlesinginacc: " + acct.getServerAuthCode());
 
-        manager.setServerAuthCode(acct.getServerAuthCode());
-
-        manager.fetchData();
+        manager.fetchSingleDataObject();
     }
 
     @Override

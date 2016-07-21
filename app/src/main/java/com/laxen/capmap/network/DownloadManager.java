@@ -34,23 +34,25 @@ public class DownloadManager {
         this.errorListener = errorListener;
     }
 
+    public void fetchSingleDataObject() {
+
+        JsonRequest request;
+
+        request = new JsonObjectRequest(
+                Request.Method.GET, getUrl, null, responseListener, errorListener);
+
+
+        // Access the RequestQueue through your singleton class.
+        RequestHandler.getInstance(context).addToRequestQueue(request);
+    }
+
     public void fetchData() {
 
         JsonRequest request;
-        Log.d("app", "serverAuthCode: " + serverAuthCode);
 
-        if(!serverAuthCode.equals("")) {
+        request = new JsonArrayRequest(
+                Request.Method.GET, getUrl, null, responseListener, errorListener);
 
-            request = new JsonObjectRequest(
-                    Request.Method.GET, getUrl + "?code=" + serverAuthCode, null, responseListener, errorListener);
-
-            Log.d("app", "actual request: " + request.toString());
-
-        } else {
-
-            request = new JsonArrayRequest(
-                    Request.Method.GET, getUrl, null, responseListener, errorListener);
-        }
 
 
         // Access the RequestQueue through your singleton class.

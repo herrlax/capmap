@@ -35,6 +35,8 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
 
     private MainActivity activity;
 
+    private String sessionKey = "";
+
     public interface ListFragmentTabListener {
         void onListFragmentTabCreated(View view);
     }
@@ -53,14 +55,6 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-        List<VideoItem> dummyData = new LinkedList<>();
-        /*dummyData.add(new VideoItem("23.4", "32.2", ""));
-        dummyData.add(new VideoItem("64.4", "86.2", ""));
-        dummyData.add(new VideoItem("27.4", "12.2", ""));*/
-
-        //mAdapter = new ListFragmentAdapter([], getContext());
-        fetchData();
 
         if(subs != null) {
             for (ListFragmentTabListener sub : subs) {
@@ -83,7 +77,7 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
         DownloadManager manager = new DownloadManager(activity);
         manager.setOnResponseListener(this);
         manager.setOnErrorListener(activity);
-        manager.setGetUrl(getString(R.string.server_url_get));
+        manager.setGetUrl(getString(R.string.server_url_get) + "/" + sessionKey);
         manager.fetchData();
     }
 
@@ -103,5 +97,9 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
 
         mAdapter = new ListFragmentAdapter(items.toArray(), activity);
         mRecyclerView.setAdapter(mAdapter);
+    }
+
+    public void setSessionKey(String sessionKey) {
+        this.sessionKey = sessionKey;
     }
 }

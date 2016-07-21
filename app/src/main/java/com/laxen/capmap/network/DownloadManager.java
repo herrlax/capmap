@@ -10,7 +10,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Created by laxen on 6/30/16.
@@ -20,7 +19,6 @@ public class DownloadManager {
     private String getUrl = "";
     private Response.Listener responseListener;
     private Response.ErrorListener errorListener;
-    private String serverAuthCode = "";
 
     public DownloadManager(Context context) {
         this.context = context;
@@ -63,7 +61,4 @@ public class DownloadManager {
         this.getUrl = getUrl;
     }
 
-    public void setServerAuthCode(String serverAuthCode) {
-        this.serverAuthCode = serverAuthCode;
-    }
 }

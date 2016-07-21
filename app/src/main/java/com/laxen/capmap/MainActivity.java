@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
@@ -264,8 +265,14 @@ public class MainActivity extends AppCompatActivity
         final UploadManager manager = new UploadManager(this);
         manager.setOnResponseListener(this);
         manager.setonErrorResponseListener(this);
-        manager.setPutUrl(getString(R.string.server_url_put));
-        manager.setSessionKey(sessionKey);
+        String putUrl = getString(R.string.server_url_put);
+        String putSufix = "";
+
+        // if a sessionkey exists add sufix to request
+        if(!sessionKey.equals(""))
+            putSufix = "?sessionKey=" + sessionKey;
+
+        manager.setPutUrl(putUrl + putSufix);
 
         try {
             PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
@@ -281,13 +288,13 @@ public class MainActivity extends AppCompatActivity
                         break;
                     }
 
-                    Log.d("app", "set locatioN: " + loc);
+                    Log.d("app", "set location: " + loc);
                     manager.setLocation(loc);
                     likelyPlaces.release();
                 }
             });
         } catch (SecurityException e) {
-            Log.e("app", "FAILED WITH PALCES");
+            Log.e("app", "FAILED SETTING PLACES");
         }
 
         manager.setLat(lat);
@@ -305,7 +312,11 @@ public class MainActivity extends AppCompatActivity
         if(response.getClass() == JSONObject.class) {
             try {
                 sessionKey = ((JSONObject) response).getString("session_key");
-                listFragmentTab.setSessionKey(sessionKey);
+
+                // saves sessionkey
+                writeSharedPref(getString(R.string.auth_shared_pref),
+                        getString(R.string.session_key), sessionKey);
+
                 listFragmentTab.fetchData();
             } catch (JSONException e) {
                 Log.e("app", "could not handle json object");
@@ -316,10 +327,19 @@ public class MainActivity extends AppCompatActivity
         if (response.getClass() == NetworkResponse.class) {
             Toast.makeText(MainActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
             mapFragmentTab.fetchData();
-            //listFragmentTab.fetchData();
+            listFragmentTab.fetchData();
             return;
         }
+    }
 
+    public void writeSharedPref(String pref, String key, String value) {
+        SharedPreferences sharedPreferences =
+                getSharedPreferences(pref, 0);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        editor.putString(key, value);
+        editor.commit();
     }
 
     // on fail response from download manager
@@ -417,7 +437,7 @@ public class MainActivity extends AppCompatActivity
             GoogleSignInAccount acct = result.getSignInAccount();
             Toast.makeText(MainActivity.this, "Welcome, " + acct.getEmail(), Toast.LENGTH_SHORT).show();
             isSignedIn = true;
-            hideSignIn();
+            //hideSignIn();
 
             getSessionKey(acct);
         }

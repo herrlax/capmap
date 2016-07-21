@@ -10,9 +10,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.volley.Response;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,8 +47,9 @@ public class MapFragmentTab extends Fragment
     private GoogleMap map;
     private MapFragment mMapFragment;
 
-    // location of the device
+    // location of the device (latlong)
     private Location location;
+    private String place;
 
     private MainActivity activity;
 
@@ -119,6 +126,30 @@ public class MapFragmentTab extends Fragment
             return;
 
         try {
+            PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+                    .getCurrentPlace(activity.getGoogleApiClient(), null);
+            result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+                @Override
+                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
+
+                    String loc = "";
+
+                    for (PlaceLikelihood place : likelyPlaces) {
+                        loc = place.getPlace().getName().toString();
+                        break;
+                    }
+
+                    Log.d("app", "Setting location to " + loc);
+                    Toast.makeText(activity, "Location: " + loc, Toast.LENGTH_LONG).show();
+                    place = loc;
+                    likelyPlaces.release();
+                }
+            });
+        } catch (SecurityException e) {
+            Log.e("app", "FAILED WITH PLACES API");
+        }
+
+        try {
             location = LocationServices.FusedLocationApi.getLastLocation(activity.getGoogleApiClient());
 
             Log.d("app", "Finding you on map: " + location);
@@ -141,4 +172,7 @@ public class MapFragmentTab extends Fragment
         return location;
     }
 
+    public String getPlace() {
+        return place;
+    }
 }

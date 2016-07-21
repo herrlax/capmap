@@ -273,32 +273,9 @@ public class MainActivity extends AppCompatActivity
 
         Log.d("app", "uploading to " + putUrl + putSufix + "...");
 
-        try {
-            PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
-                    .getCurrentPlace(apiClient, null);
-            result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
-                @Override
-                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
-
-                    String loc = "";
-
-                    for (PlaceLikelihood place : likelyPlaces) {
-                        loc = place.getPlace().getName().toString();
-                        break;
-                    }
-
-                    Log.d("app", "Setting location to " + loc);
-                    Toast.makeText(MainActivity.this, "Location: " + loc, Toast.LENGTH_LONG).show();
-                    manager.setLocation(loc);
-                    likelyPlaces.release();
-                }
-            });
-        } catch (SecurityException e) {
-            Log.e("app", "FAILED WITH PLACES API");
-        }
-
         manager.setLat(lat);
         manager.setLon(lon);
+        manager.setLocation(mapFragmentTab.getPlace());
 
         manager.uploadFromUri(uri);
     }

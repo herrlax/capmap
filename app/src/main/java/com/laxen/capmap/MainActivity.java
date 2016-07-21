@@ -1,8 +1,6 @@
 package com.laxen.capmap;
 
-import android.Manifest;
 import android.app.FragmentTransaction;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -48,7 +46,6 @@ import com.laxen.capmap.tabs.SlidingTabLayout;
 import com.laxen.capmap.utils.PermissionHandler;
 import com.laxen.capmap.utils.ViewPagerAdapter;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -348,7 +345,13 @@ public class MainActivity extends AppCompatActivity
     // on fail response from download manager
     @Override
     public void onErrorResponse(VolleyError error) {
-        Log.e("app", error.networkResponse.statusCode + "");
+        try {
+            Log.e("app", "MainActivity: " +  error.networkResponse.statusCode + "");
+        } catch (NullPointerException e) {
+            Log.e("app", "MainActivity: " +  "Critical network error");
+            Log.e("app", "MainActivity: " +  error.toString());
+        }
+
         Toast.makeText(MainActivity.this, "Network error :<", Toast.LENGTH_SHORT).show();
     }
 
@@ -433,14 +436,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
-        Log.d("app", "handleSignInResult:" + result.isSuccess());
 
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             Toast.makeText(MainActivity.this, "Welcome, " + acct.getEmail(), Toast.LENGTH_SHORT).show();
             isSignedIn = true;
-            //hideSignIn();
+            hideSignIn();
 
             getSessionKey(acct);
         }
@@ -451,8 +453,6 @@ public class MainActivity extends AppCompatActivity
         manager.setOnResponseListener(this);
         manager.setOnErrorListener(this);
         manager.setGetUrl(getString(R.string.auth_callback) + "?code=" + acct.getServerAuthCode());
-
-        Log.d("app", "googlesinginacc: " + acct.getServerAuthCode());
 
         manager.fetchSingleDataObject();
     }
@@ -505,8 +505,6 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[],
                                            int[] grantResults) {
-
-        Log.d("app", "got a response! yiha!");
 
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {

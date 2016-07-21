@@ -10,8 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.laxen.capmap.MainActivity;
 import com.laxen.capmap.R;
 import com.laxen.capmap.network.DownloadManager;
@@ -26,13 +28,26 @@ import java.util.Set;
 /**
  * Created by laxen on 7/10/16.
  */
-public class ListFragmentTab extends Fragment implements Response.Listener<JSONArray> {
+public class ListFragmentTab extends Fragment implements Response.Listener<JSONArray>,Response.ErrorListener {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private View signInCard;
 
     private MainActivity activity;
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+
+        try {
+            Log.e("app", "ListFragmentTab: " +  error.networkResponse.statusCode + "");
+        } catch (NullPointerException e) {
+            Log.e("app", "ListFragmentTab: " +  "Critical network error");
+            Log.e("app", "ListFragmentTab: " +  error.toString());
+        }
+
+        Toast.makeText(getActivity(), "Network error in fetching your videos..", Toast.LENGTH_LONG).show();
+    }
 
     public interface ListFragmentTabListener {
         void onListFragmentTabCreated(View view);
@@ -44,12 +59,7 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
     public View onCreateView(LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_myvideos,container,false);
 
-
-        // if a local sessionkey is found, check if it's active with server
-        if(loadSessionKey().equals("")) {
-            signInCard = view.findViewById(R.id.card_view);
-            signInCard.setVisibility(View.INVISIBLE);
-        }
+        signInCard = view.findViewById(R.id.card_view);
 
         activity = (MainActivity) this.getActivity();
 
@@ -86,12 +96,14 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
             return;
         }
 
-        Log.d("app", "loaded sess.key locally: " + loadSessionKey());
+        String getUrl = getString(R.string.server_url_get) + "?sessionKey=" + loadSessionKey();
+
+        Log.d("app", "ListFragmentTab: GetUrl = " + getUrl);
 
         DownloadManager manager = new DownloadManager(activity);
         manager.setOnResponseListener(this);
-        manager.setOnErrorListener(activity);
-        manager.setGetUrl(getString(R.string.server_url_get) + "?sessionKey=" + loadSessionKey());
+        manager.setOnErrorListener(this);
+        manager.setGetUrl(getUrl);
         manager.fetchData();
     }
 

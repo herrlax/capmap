@@ -266,8 +266,8 @@ public class MainActivity extends AppCompatActivity
         String putSufix = "";
 
         // if a sessionkey exists add sufix to request
-        if(!sessionKey.equals(""))
-            putSufix = "?sessionKey=" + sessionKey;
+        if(!loadSessionKey().equals(""))
+            putSufix = "?sessionKey=" + loadSessionKey();
 
         manager.setPutUrl(putUrl + putSufix);
 
@@ -301,6 +301,13 @@ public class MainActivity extends AppCompatActivity
         manager.setLon(lon);
 
         manager.uploadFromUri(uri);
+    }
+
+    public String loadSessionKey() {
+        SharedPreferences sharedPreferences =
+                getSharedPreferences(getString(R.string.auth_shared_pref), 0);
+
+        return sharedPreferences.getString(getString(R.string.session_key), "");
     }
 
 

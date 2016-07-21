@@ -277,6 +277,8 @@ public class MainActivity extends AppCompatActivity
         manager.setLon(lon);
         manager.setLocation(mapFragmentTab.getPlace());
 
+        Log.d("app", "Location was: " + mapFragmentTab.getPlace());
+
         manager.uploadFromUri(uri);
     }
 

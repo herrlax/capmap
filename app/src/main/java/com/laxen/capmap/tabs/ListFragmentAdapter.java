@@ -1,6 +1,9 @@
 package com.laxen.capmap.tabs;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,6 +17,9 @@ import android.widget.TextView;
 import com.laxen.capmap.MainActivity;
 import com.laxen.capmap.R;
 import com.laxen.capmap.utils.VideoItem;
+
+import java.io.InputStream;
+import java.net.URL;
 
 
 /**
@@ -58,7 +64,8 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
             }
         });
 
-        holder.timeStampTextView.setText("2016-04-02 10:33");
+        holder.timeStampTextView.setText(videoItem.getTimestamp());
+        holder.expiresTextView.setText("Expires in " + videoItem.getExpires());
 
         if(!videoItem.getLongitude().equals("")) {
             holder.locationTextView.setText(videoItem.getLocation());
@@ -82,8 +89,9 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
         protected TextView viewsTextView;
         protected TextView deleteButton;
         protected TextView playButton;
+        protected TextView expiresTextView;
         protected CardView cardView;
-        protected View cardBackground;
+        protected ImageView cardBackground;
 
         public View view;
         public ViewHolder(View v) {
@@ -91,10 +99,11 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
             timeStampTextView = (TextView) v.findViewById(R.id.timeStampTextView);
             locationTextView = (TextView) v.findViewById(R.id.locationTextView);
             viewsTextView = (TextView) v.findViewById(R.id.viewsTextView);
+            expiresTextView = (TextView) v.findViewById(R.id.expiresText);
             deleteButton = (TextView) v.findViewById(R.id.deleteButton);
             playButton = (TextView) v.findViewById(R.id.playButton);
             cardView = (CardView) v.findViewById(R.id.card_view);
-            cardBackground = v.findViewById(R.id.cardBackground);
+            cardBackground = (ImageView)v .findViewById(R.id.cardBackground);
 
         }
     }

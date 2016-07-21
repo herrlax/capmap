@@ -55,6 +55,7 @@
                         android:textSize="24sp"
                         android:layout_alignParentBottom="true"
                         android:layout_alignParentStart="true" />
+
                 </RelativeLayout>
 
                 <RelativeLayout
@@ -69,10 +70,10 @@
                         android:textColor="@color/textColor"
                         android:text="623 views"
                         android:textSize="14sp"
-                        android:layout_below="@+id/viewsTextView2"
-                        android:layout_alignStart="@+id/viewsTextView2" />
+                        android:layout_below="@+id/expiresText"
+                        android:layout_alignStart="@+id/expiresText" />
                     <TextView
-                        android:id="@+id/viewsTextView2"
+                        android:id="@+id/expiresText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/textColor"

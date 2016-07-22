@@ -99,7 +99,7 @@ public class PermissionHandler {
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
 
-        } else {
+        } else { // if all is good
 
             for (PermissionHandlerListener listener: listeners) {
                 listener.onPermissionResponse(LOCATION_ACCESS_GRANTED);

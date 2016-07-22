@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -46,7 +47,7 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final VideoItem videoItem = (VideoItem) videos[position];
 
         Log.d("app", videoItem.toString());
@@ -65,7 +66,7 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
             }
         });
 
-        holder.timeStampTextView.setText(videoItem.getTimestamp());
+        holder.timeStampTextView.setText("Video is " + videoItem.getTimestamp());
         holder.expiresTextView.setText("Expires in " + videoItem.getExpires());
 
         // setting thumbnail ..

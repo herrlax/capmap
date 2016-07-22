@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/tools"
     android:padding="4dp"
     android:layout_width="match_parent">
 
@@ -23,12 +24,12 @@
             <com.makeramen.roundedimageview.RoundedImageView
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/cardBackground"
-                android:background="@color/colorPrimary"
                 android:scaleType="fitXY"
+                android:background="@color/colorPrimary"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
-                app:riv_corner_radius_top_left="4dp"
-                app:riv_corner_radius_top_right="4dp"
+                app:riv_corner_radius_top_left="2dp"
+                app:riv_corner_radius_top_right="2dp"
                 app:riv_mutate_background="true"
                 app:riv_tile_mode="repeat"/>
 
@@ -67,7 +68,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/textColor"
-                        android:text="623 views"
+                        android:text=""
                         android:textSize="14sp"
                         android:layout_below="@+id/expiresText"
                         android:layout_alignStart="@+id/expiresText" />

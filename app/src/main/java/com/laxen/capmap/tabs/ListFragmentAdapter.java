@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.laxen.capmap.MainActivity;
 import com.laxen.capmap.R;
 import com.laxen.capmap.utils.VideoItem;
+import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -66,6 +67,14 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
 
         holder.timeStampTextView.setText(videoItem.getTimestamp());
         holder.expiresTextView.setText("Expires in " + videoItem.getExpires());
+
+        // setting thumbnail ..
+        Picasso.with(context)
+                .load(videoItem.getThumbnail())
+                .fit()
+                .centerCrop()
+                .into(holder.cardBackground);
+
 
         if(!videoItem.getLongitude().equals("")) {
             holder.locationTextView.setText(videoItem.getLocation());

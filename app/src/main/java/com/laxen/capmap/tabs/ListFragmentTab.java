@@ -10,15 +10,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.laxen.capmap.MainActivity;
 import com.laxen.capmap.R;
 import com.laxen.capmap.network.DownloadManager;
+import com.laxen.capmap.network.RequestHandler;
 import com.laxen.capmap.utils.JsonHelper;
 import com.laxen.capmap.utils.VideoItem;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 
@@ -59,9 +63,9 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
     public View onCreateView(LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_myvideos,container,false);
 
-        signInCard = view.findViewById(R.id.card_view);
-
         activity = (MainActivity) this.getActivity();
+
+        signInCard = view.findViewById(R.id.card_view);
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true); // for improved performance

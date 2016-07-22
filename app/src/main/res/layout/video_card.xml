@@ -25,7 +25,6 @@
                 android:id="@+id/cardBackground"
                 android:background="@color/colorPrimary"
                 android:scaleType="fitXY"
-                android:padding="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
                 app:riv_corner_radius_top_left="4dp"

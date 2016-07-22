@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
-            Toast.makeText(MainActivity.this, "Welcome, " + acct.getEmail(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Welcome, " + acct.getDisplayName(), Toast.LENGTH_SHORT).show();
             isSignedIn = true;
             hideSignIn();
 

@@ -1,7 +1,6 @@
 package com.laxen.capmap.tabs;
 
 import android.app.FragmentTransaction;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;

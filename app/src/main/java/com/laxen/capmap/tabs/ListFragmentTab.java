@@ -10,19 +10,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.laxen.capmap.MainActivity;
 import com.laxen.capmap.R;
 import com.laxen.capmap.network.DownloadManager;
-import com.laxen.capmap.network.RequestHandler;
 import com.laxen.capmap.utils.JsonHelper;
 import com.laxen.capmap.utils.VideoItem;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 
@@ -50,7 +45,6 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
             Log.e("app", "ListFragmentTab: " +  error.toString());
         }
 
-        Toast.makeText(getActivity(), "Network error in fetching your videos..", Toast.LENGTH_LONG).show();
     }
 
     public interface ListFragmentTabListener {

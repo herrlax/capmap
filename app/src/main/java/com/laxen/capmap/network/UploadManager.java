@@ -3,11 +3,9 @@ package com.laxen.capmap.network;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

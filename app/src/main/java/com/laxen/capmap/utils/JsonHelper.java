@@ -12,6 +12,7 @@ import java.util.Set;
 
 /**
  * Created by laxen on 6/29/16.
+ * Class used to convert json data into a set of videoitems
  */
 public class JsonHelper {
 

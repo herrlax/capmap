@@ -54,7 +54,7 @@ public class MapFragmentTab extends Fragment
 
     private MainActivity activity;
 
-    private HashMap<LatLng, ArrayList<Marker>> markers;
+    private HashMap<String, ArrayList<String>> markers;
 
 
     @Override
@@ -111,36 +111,24 @@ public class MapFragmentTab extends Fragment
 
         for(VideoItem item : items) {
 
-            LatLng PERTH = new LatLng(-31.90, 115.86);
-            Marker perth = map.addMarker(new MarkerOptions()
-                    .position(PERTH)
-                    .draggable(true));
-
-            if(markers.get(PERTH) == null) {
-                markers.put(PERTH, new ArrayList<Marker>());
-            }
-
-            markers.get(PERTH).add(perth);
-
-
-            LatLng VID = new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude()));
-            Marker vid = map.addMarker(new MarkerOptions()
+            LatLng LOCATION = new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude()));
+            map.addMarker(new MarkerOptions()
                     //.icon(BitmapDescriptorFactory.fromResource(R.mipmap.capmapicon))
-                    .position(VID)
-                    .title(item.getUrl())); // sets video url as title for playback
+                    .position(LOCATION)
+                    .title(LOCATION.toString())); // sets video url as title for playback
 
-            if(markers.get(VID) == null) {
-                markers.put(VID, new ArrayList<Marker>());
-            }
+            if(markers.get(LOCATION.toString()) == null)
+                markers.put(LOCATION.toString(), new ArrayList<String>());
 
-            markers.get(VID).add(vid);
+            markers.get(LOCATION.toString()).add(item.getUrl());
+            Log.d("app", "ADDED URL : " + item.getUrl().hashCode());
         }
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        activity.playVideo(marker.getTitle());
+        activity.playVideos(markers.get(marker.getTitle()));
 
         return true;
     }

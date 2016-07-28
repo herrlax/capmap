@@ -34,6 +34,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.model.LatLng;
 import com.laxen.capmap.network.DownloadManager;
 import com.laxen.capmap.network.UploadManager;
 import com.laxen.capmap.tabs.ListFragmentTab;
@@ -44,6 +45,9 @@ import com.laxen.capmap.utils.ViewPagerAdapter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
         implements
@@ -142,10 +146,13 @@ public class MainActivity extends AppCompatActivity
         listFragmentTab.subscribe(this);
     }
 
-    public void playVideo(String url) {
+    public void playVideos(ArrayList<String> urls) {
 
-        videoUri = Uri.parse(url);
-        videoFragment.setVideoUri(Uri.parse(url));
+        videoFragment.setUris(new ArrayList<Uri>());
+
+        for(String url : urls) {
+            videoFragment.getUris().add(Uri.parse(url));
+        }
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
@@ -157,14 +164,15 @@ public class MainActivity extends AppCompatActivity
 
     // triggered when a video has caused a screen rotation
     public void playVideoInLandscape() {
-        videoFragment.setVideoUri(videoUri);
+        Log.e("app", "rotation");
+        /*videoFragment.setVideoUri(videoUri);
 
         FragmentTransaction transaction;
 
         transaction = this.getFragmentManager().beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(R.id.fragmentcontainer, videoFragment).addToBackStack("videoFragment");
-        transaction.commit();
+        transaction.commit();*/
     }
 
     @Override
@@ -238,8 +246,10 @@ public class MainActivity extends AppCompatActivity
                 Location location = mapFragmentTab.getLocation();
 
                 if (location != null) {
-                    double lat = location.getLatitude();
-                    double lon = location.getLongitude();
+                    double lat = Math.floor(location.getLatitude() * 1000) / 1000;
+                    double lon = Math.floor(location.getLongitude() * 1000) / 1000;
+
+                    Log.d("app", lat + ":" + lon);
 
                     // uploads video to server
                     uploadVideo(data.getData(), lat, lon);

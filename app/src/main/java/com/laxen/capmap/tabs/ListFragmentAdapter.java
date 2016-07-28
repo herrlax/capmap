@@ -14,6 +14,8 @@ import com.laxen.capmap.R;
 import com.laxen.capmap.utils.VideoItem;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 
 /**
  * Created by laxen on 7/11/16.
@@ -46,7 +48,9 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
         holder.playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.playVideo(videoItem.getUrl());
+                ArrayList<String> urls = new ArrayList<String>();
+                urls.add(videoItem.getUrl());
+                context.playVideos(urls);
             }
         });
 

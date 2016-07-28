@@ -14,13 +14,15 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
+import java.util.ArrayList;
+
 /**
  * Created by laxen on 5/25/16.
  */
 public class VideoFragment extends Fragment {
 
-    private Uri videoUri;
     private VideoView videoView;
+    private ArrayList<Uri> uris;
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
@@ -33,15 +35,15 @@ public class VideoFragment extends Fragment {
         videoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // end fragment when user clicks video
-                videoView.stopPlayback();
-                getActivity().getFragmentManager().beginTransaction().remove(VideoFragment.this).commit();
-                getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                Log.e("App", "ending fragment");
+                playNext();
             }
         });
 
-        videoView.setVideoURI(videoUri);
+
+        Log.d("app", "ALL URIS:");
+        Log.d("app", uris.toString());
+
+        videoView.setVideoURI(uris.remove(0));
         videoView.requestFocus();
 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -56,10 +58,35 @@ public class VideoFragment extends Fragment {
             }
         });
 
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                playNext();
+            }
+        });
+
         return view;
     }
 
-    public void setVideoUri(Uri videoUri) {
-        this.videoUri = videoUri;
+    public void playNext() {
+        Log.d("app", "URIS:");
+        Log.d("app", uris.toString());
+        if(!uris.isEmpty()) {
+            videoView.setVideoURI(uris.remove(0));
+        } else {
+
+            // end fragment if no video is left to play
+            videoView.stopPlayback();
+            getActivity().getFragmentManager().beginTransaction().remove(VideoFragment.this).commit();
+        }
+    }
+
+    public void setUris(ArrayList<Uri> uris) {
+        this.uris = uris;
+    }
+
+    public ArrayList<Uri> getUris() {
+        return uris;
     }
 }

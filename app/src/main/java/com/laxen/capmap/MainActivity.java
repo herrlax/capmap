@@ -62,11 +62,11 @@ public class MainActivity extends AppCompatActivity
     private boolean isSignedIn = false;
     private String sessionKey = "";
 
-    boolean orienChanged = false;
-    int lastOrientation = 0;
+    private boolean orienChanged = false;
+    private int lastOrientation = 0;
 
-    private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_CAMERA = 2;
     private static final int CAMERA_ACCESS_GRANTED = 3;
     private static final int LOCATION_ACCESS_GRANTED = 4;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
@@ -89,14 +89,14 @@ public class MainActivity extends AppCompatActivity
     private Uri videoUri;
 
     // fragment for displaying video
-    VideoFragment videoFragment = new VideoFragment();
+    private VideoFragment videoFragment = new VideoFragment();
 
     private GoogleSignInOptions gso;
 
     // Toolbar toolbar;
-    ViewPagerAdapter adapter;
-    SlidingTabLayout tabs;
-    ViewPager pager;
+    private ViewPagerAdapter adapter;
+    private SlidingTabLayout tabs;
+    private ViewPager pager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

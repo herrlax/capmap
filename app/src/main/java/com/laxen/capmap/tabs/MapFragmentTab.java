@@ -35,6 +35,8 @@ import com.laxen.capmap.utils.VideoItem;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 public class MapFragmentTab extends Fragment
@@ -52,6 +54,8 @@ public class MapFragmentTab extends Fragment
 
     private MainActivity activity;
 
+    private HashMap<LatLng, ArrayList<Marker>> markers;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,6 +68,7 @@ public class MapFragmentTab extends Fragment
     }
 
     public void initMaps() {
+        markers = new HashMap<>();
         mMapFragment = MapFragment.newInstance();
 
         FragmentTransaction fragmentTransaction =
@@ -105,9 +110,30 @@ public class MapFragmentTab extends Fragment
     public void addToMap(Set<VideoItem> items) {
 
         for(VideoItem item : items) {
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude())))
+
+            LatLng PERTH = new LatLng(-31.90, 115.86);
+            Marker perth = map.addMarker(new MarkerOptions()
+                    .position(PERTH)
+                    .draggable(true));
+
+            if(markers.get(PERTH) == null) {
+                markers.put(PERTH, new ArrayList<Marker>());
+            }
+
+            markers.get(PERTH).add(perth);
+
+
+            LatLng VID = new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude()));
+            Marker vid = map.addMarker(new MarkerOptions()
+                    //.icon(BitmapDescriptorFactory.fromResource(R.mipmap.capmapicon))
+                    .position(VID)
                     .title(item.getUrl())); // sets video url as title for playback
+
+            if(markers.get(VID) == null) {
+                markers.put(VID, new ArrayList<Marker>());
+            }
+
+            markers.get(VID).add(vid);
         }
     }
 

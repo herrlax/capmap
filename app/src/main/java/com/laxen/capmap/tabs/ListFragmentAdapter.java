@@ -112,4 +112,5 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
 
         }
     }
+
 }

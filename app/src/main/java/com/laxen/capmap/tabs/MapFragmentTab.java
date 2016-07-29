@@ -188,4 +188,8 @@ public class MapFragmentTab extends Fragment
     public String getPlace() {
         return place;
     }
+
+    public void die() {
+        map.stopAnimation();
+    }
 }

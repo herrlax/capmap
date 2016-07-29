@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity
     private MediaSaver saver;
 
     // captured video to be added to map
-    private Uri videoUri;
+    //private Uri videoUri;
 
     // fragment for displaying video
     private VideoFragment videoFragment = new VideoFragment();
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity
             saver = new MediaSaver();
         }
 
-        videoUri = saver.getOutputMediaFileUri(saver.MEDIA_TYPE_VIDEO);
+        //videoUri = saver.getOutputMediaFileUri(saver.MEDIA_TYPE_VIDEO);
 
         // start the Video Capture Intent
         startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
@@ -483,7 +483,9 @@ public class MainActivity extends AppCompatActivity
                 startCamera();
                 return;
             case LOCATION_ACCESS_GRANTED:
-                mapFragmentTab.setLocation();
+                if(mapFragmentTab.getLocation() == null)
+                    mapFragmentTab.setLocation();
+                
                 return;
         }
     }
@@ -560,7 +562,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
+        mapFragmentTab.setLocation();
     }
 
     /**
@@ -592,5 +594,18 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
 
+    }
+
+    @Override
+    public void onDestroy() {
+
+        mapFragmentTab.die();
+        videoFragment.die();
+
+        apiClient.disconnect();
+
+        onStop();
+
+        super.onDestroy();
     }
 }

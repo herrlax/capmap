@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.laxen.capmap">
+    <!-- permissions for accessing the location -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- permission for internet connection -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- permission for using camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <user-permission android:name="android.hardware.camera" />
+    <user-permission android:name="android.hardware.camera.front" />
+
+    <!-- permission for storing and reading data -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- permission for recording audio -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- permission for keeping screen awake -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/capmapicon"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <!-- api key for maps -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_places_key" />
+
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

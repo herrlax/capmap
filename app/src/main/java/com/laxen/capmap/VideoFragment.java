@@ -89,4 +89,10 @@ public class VideoFragment extends Fragment {
     public ArrayList<Uri> getUris() {
         return uris;
     }
+
+    public void die() {
+        if(videoView != null && videoView.isPlaying()) {
+            videoView.stopPlayback();
+        }
+    }
 }

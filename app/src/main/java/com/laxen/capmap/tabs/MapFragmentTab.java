@@ -49,7 +49,6 @@ public class MapFragmentTab extends Fragment
     private MapFragment mMapFragment;
 
     // location of the device (latlong)
-    private Location location;
     private String place;
 
     private MainActivity activity;
@@ -133,37 +132,13 @@ public class MapFragmentTab extends Fragment
         return true;
     }
 
-    public void setLocation() {
+    public void setLocation(Location location) {
 
         if(activity == null)
             return;
 
-        try {
-            PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
-                    .getCurrentPlace(activity.getGoogleApiClient(), null);
-            result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
-                @Override
-                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
-
-                    String loc = "";
-
-                    for (PlaceLikelihood place : likelyPlaces) {
-                        loc = place.getPlace().getName().toString();
-                        break;
-                    }
-
-                    Log.d("app", "Setting location to " + loc);
-                    Toast.makeText(activity, "Location: " + loc, Toast.LENGTH_LONG).show();
-                    place = loc;
-                    likelyPlaces.release();
-                }
-            });
-        } catch (SecurityException e) {
-            Log.e("app", "FAILED WITH PLACES API");
-        }
 
         try {
-            location = LocationServices.FusedLocationApi.getLastLocation(activity.getGoogleApiClient());
 
             Log.d("app", "Finding you on map: " + location);
 
@@ -179,14 +154,6 @@ public class MapFragmentTab extends Fragment
             Log.e("app", "MapFragmentTab: Location error " + e.toString());
         }
 
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public String getPlace() {
-        return place;
     }
 
     public void die() {

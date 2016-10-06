@@ -1,6 +1,8 @@
 package com.laxen.capmap;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -64,6 +66,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import static com.laxen.capmap.R.id.view;
+
 public class MainActivity extends AppCompatActivity
         implements
         GoogleApiClient.ConnectionCallbacks,
@@ -104,6 +108,7 @@ public class MainActivity extends AppCompatActivity
     private MapFragmentTab mapFragmentTab;
     private ListFragmentTab listFragmentTab;
     private View signInCard;
+    private View controllers;
 
     // Util class for storing data on device
     private MediaSaver saver;
@@ -142,6 +147,8 @@ public class MainActivity extends AppCompatActivity
 
             initGooglePlayServices();
 
+            controllers = findViewById(R.id.controllers);
+
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -157,6 +164,21 @@ public class MainActivity extends AppCompatActivity
 
             saver = new MediaSaver();
         }
+    }
+
+    public void hideControllers() {
+
+        controllers.animate()
+                .translationY(controllers.getHeight());
+
+
+    }
+
+    public void showControllers() {
+
+        controllers.animate()
+                .translationY(0);
+
     }
 
     public void initFragments() {
@@ -413,6 +435,29 @@ public class MainActivity extends AppCompatActivity
         // sets pager for sliding tabs
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+                // hides and shows controllers depending on tab
+                if(position == 0) {
+                    showControllers();
+                } else {
+                    hideControllers();
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         // tabs for list and map
         tabs = (SlidingTabLayout) findViewById(R.id.tabs);

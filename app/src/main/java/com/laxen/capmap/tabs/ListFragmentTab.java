@@ -89,12 +89,18 @@ public class ListFragmentTab extends Fragment implements Response.Listener<JSONA
     // fetches data from server
     public void fetchData() {
 
+        String getUrl = getString(R.string.server_url_get);
+
+        // if not logged in ..
         if(loadSessionKey().equals("")){
             Log.e("app", "no session key stored locally");
-            return;
-        }
 
-        String getUrl = getString(R.string.server_url_get) + "?sessionKey=" + loadSessionKey();
+            // todo uncomment this! For debugging purposes we don't end the function here
+            // return;
+
+        } else {
+            getUrl += "?sessionKey=" + loadSessionKey(); // add personal session key
+        }
 
         Log.d("app", "ListFragmentTab: GetUrl = " + getUrl);
 

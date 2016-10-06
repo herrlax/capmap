@@ -34,7 +34,7 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_card, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_card_new, parent, false);
 
         return new ViewHolder(view);
     }

@@ -61,7 +61,6 @@ public class VideoFragment extends Fragment {
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 playNext();
             }
         });
@@ -78,6 +77,7 @@ public class VideoFragment extends Fragment {
 
             // end fragment if no video is left to play
             videoView.stopPlayback();
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             getActivity().getFragmentManager().beginTransaction().remove(VideoFragment.this).commit();
         }
     }

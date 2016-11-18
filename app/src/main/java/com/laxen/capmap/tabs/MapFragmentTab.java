@@ -1,6 +1,7 @@
 package com.laxen.capmap.tabs;
 
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,15 +10,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import com.android.volley.Response;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,14 +37,11 @@ import java.util.Set;
 public class MapFragmentTab extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
-        Response.Listener<JSONArray> {
+        Response.Listener<JSONArray>{
 
     // google maps
     private GoogleMap map;
     private MapFragment mMapFragment;
-
-    // location of the device (latlong)
-    private String place;
 
     private MainActivity activity;
 
@@ -89,6 +81,9 @@ public class MapFragmentTab extends Fragment
 
     // fetches data from server
     public void fetchData() {
+
+        activity.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+
         DownloadManager manager = new DownloadManager(activity);
         manager.setOnResponseListener(this);
         manager.setOnErrorListener(activity);
@@ -98,6 +93,9 @@ public class MapFragmentTab extends Fragment
 
     @Override
     public void onResponse(JSONArray response) {
+
+        activity.findViewById(R.id.progressBar).setVisibility(View.GONE);
+
         // if response from download manager
         if(response.getClass() == JSONArray.class) {
             addToMap(JsonHelper.jsonArrayToSet(response));
@@ -107,6 +105,9 @@ public class MapFragmentTab extends Fragment
 
     // adds a set of video items to the map as markers
     public void addToMap(Set<VideoItem> items) {
+
+        // removes current markers
+        map.clear();
 
         for(VideoItem item : items) {
 

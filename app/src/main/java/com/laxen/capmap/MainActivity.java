@@ -24,11 +24,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
@@ -147,10 +151,11 @@ public class MainActivity extends AppCompatActivity
 
             initGooglePlayServices();
 
+            // the toolbar of controllers in the bootom of the screen
             controllers = findViewById(R.id.controllers);
 
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.setOnClickListener(new View.OnClickListener() {
+            FloatingActionButton cameraButton = (FloatingActionButton) findViewById(R.id.fab);
+            cameraButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     permissionHandler.requestCamera();
@@ -161,9 +166,73 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
+            View refreshButton = findViewById(R.id.refresh_button);
+            refreshButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    mapFragmentTab.fetchData();
+                }
+            });
+
+            // hides the search bar..
+            hideSearch();
+
+            View searchButton = findViewById(R.id.search_button);
+            searchButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    // shows search bar from top
+                    View searchTab = findViewById(R.id.search_tab);
+                    searchTab.animate()
+                            .translationY(0);
+
+                    // hides toolbar at bottom of screen
+                    hideControllers();
+
+                }
+            });
+
+            EditText searchField = (EditText) findViewById(R.id.search_field);
+
+            searchField.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+
+                    // if the user is done and presses enter, hide search and bring up controls
+                    if(keyCode == KeyEvent.KEYCODE_ENTER) {
+                        showControllers();
+                        hideSearch();
+                    }
+                    return false;
+                }
+            });
+
+            searchField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View view, boolean b) {
+
+                    if(!b) {
+                        showControllers();
+                        View searchTab = findViewById(R.id.search_tab);
+                        searchTab.animate()
+                                .translationY(-1000);
+
+                    }
+                }
+            });
+
 
             saver = new MediaSaver();
         }
+    }
+
+    public void hideSearch() {
+        View searchTab = findViewById(R.id.search_tab);
+        searchTab.animate()
+                .translationY(-1000);
+        searchTab.setVisibility(View.VISIBLE);
     }
 
     public void hideControllers() {
@@ -449,6 +518,7 @@ public class MainActivity extends AppCompatActivity
                 if(position == 0) {
                     showControllers();
                 } else {
+                    hideSearch();
                     hideControllers();
                 }
             }

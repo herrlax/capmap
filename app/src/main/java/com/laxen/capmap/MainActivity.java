@@ -4,6 +4,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,6 +31,7 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -183,10 +185,11 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(View view) {
 
-                    // shows search bar from top
-                    View searchTab = findViewById(R.id.search_tab);
-                    searchTab.animate()
+                    // shows search bar from top and focus it
+                    findViewById(R.id.search_tab).animate()
                             .translationY(0);
+
+                    ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
                     // hides toolbar at bottom of screen
                     hideControllers();

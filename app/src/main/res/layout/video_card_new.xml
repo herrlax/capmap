@@ -81,31 +81,49 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginLeft="16dp"
+                    android:padding="0dp">
 
-                    <TextView
-                        android:id="@+id/deleteButton"
-                        android:padding="4dp"
-                        android:layout_width="100dp"
-                        android:textAlignment="center"
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/colorPlay"
-                        android:text="Remove"
-                        android:textSize="@dimen/medium"
-                        android:layout_alignBottom="@+id/playButton"
-                        android:layout_toEndOf="@+id/playButton" />
+                        android:layout_alignParentStart="true"
+                        android:id="@+id/playButtonLayout"
+                        android:clickable="true"
+                        android:background="@drawable/ripple_background">
 
-                    <TextView
-                        android:id="@+id/playButton"
-                        android:padding="4dp"
-                        android:layout_width="100dp"
-                        android:textAlignment="center"
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center"
+                            android:id="@+id/playButton"
+                            android:textColor="@color/colorPlay"
+                            android:text="Play"
+                            android:textSize="21sp" />
+
+                    </RelativeLayout>
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/colorPlay"
-                        android:text="Play"
-                        android:textSize="@dimen/medium"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentStart="true" />
+                        android:layout_toEndOf="@+id/playButtonLayout"
+                        android:clickable="true"
+                        android:layout_marginStart="32dp"
+                        android:background="@drawable/ripple_background">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/deleteButton"
+                            android:textAlignment="center"
+                            android:textColor="@color/colorPlay"
+                            android:text="Remove"
+                            android:textSize="21sp" />
+
+                    </RelativeLayout>
 
                 </RelativeLayout>
 

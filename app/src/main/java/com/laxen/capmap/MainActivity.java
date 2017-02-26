@@ -262,6 +262,7 @@ public class MainActivity extends AppCompatActivity
     // triggered when a video has caused a screen rotation
     public void playVideoInLandscape() {
         Log.e("app", "rotation");
+
         /*videoFragment.setVideoUri(videoUri);
 
         FragmentTransaction transaction;

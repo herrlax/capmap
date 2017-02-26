@@ -6,7 +6,7 @@
     <string name="auth_callback">http://digit.lha.sgsnet.se:8000/auth/google_oauth2/callback</string>
     <string name="server_url_put">http://digit.lha.sgsnet.se:8000/videos</string>
     <!--<string name="server_url_get">http://digit.lha.sgsnet.se:8000/videos.json</string>-->
-    <string name="server_url_get">http://malmqvist.it/videos.json</string>
+    <string name="server_url_get">https://github.com/capmap/capmap/blob/develop/videos.json</string>
     <string name="server_client_id">437506909058-h8ich0cauen6vjt9cnqqr1rsjsfktj79.apps.googleusercontent.com</string>
     <string name="google_places_key">AIzaSyDH8kyskP3tsGV6uPv_XPZOUjjqT8flloQ</string>
     <string name="auth_shared_pref">AUTH_SHARED_PREFERENCES</string>

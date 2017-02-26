@@ -1,0 +1,41 @@
+[{
+	url: "https://pixabay.com/sv/videos/download/video-3133_sd.mp4",
+	latitude: "57.708870",
+	longitude: "11.974560",
+	location: "Gothenburg City Hall",
+	thumbnail: "https://d13yacurqjgara.cloudfront.net/users/35381/screenshots/3006828/wut.png",
+	timestamp: "3 hours",
+	expires: "24 hours"
+},{
+        url: "https://pixabay.com/sv/videos/download/video-1193_sd.mp4",
+        latitude: "57.708870",        
+	longitude: "11.974560",
+        location: "Gothenburg City Hall",
+        thumbnail: "https://d13yacurqjgara.cloudfront.net/users/34991/screenshots/3006793/dribbble_beaver.png",
+        timestamp: "3 hours",
+        expires: "24 hours"
+},{
+        url: "https://pixabay.com/sv/videos/download/video-1283_sd.mp4",
+        latitude: "40.4636",        
+	longitude: "-3.749220",
+        location: "Ibiza",
+        thumbnail: "https://d13yacurqjgara.cloudfront.net/users/274615/screenshots/3007055/bulletin_jugendbarometer2016.jpg",
+        timestamp: "3 hours",
+        expires: "24 hours"
+},{
+        url: "https://pixabay.com/sv/videos/download/video-4752_source.mp4",
+        latitude: "40.4636",  
+        longitude: "-3.749220",
+        location: "Ibiza",
+        thumbnail: "https://d13yacurqjgara.cloudfront.net/users/648290/screenshots/3007173/future-bike-.gif",
+        timestamp: "3 hours",
+        expires: "24 hours"
+},{
+        url: "https://pixabay.com/sv/videos/download/video-3998_720p.mp4",
+        latitude: "40.4636",  
+        longitude: "-3.749220",
+        location: "Ibiza",
+        thumbnail: "https://d13yacurqjgara.cloudfront.net/users/172732/screenshots/3007087/dribbble_cocoon03.png",
+        timestamp: "3 hours",
+        expires: "24 hours"
+}]

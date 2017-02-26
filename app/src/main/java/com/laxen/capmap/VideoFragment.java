@@ -2,6 +2,7 @@ package com.laxen.capmap;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -11,7 +12,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ public class VideoFragment extends Fragment {
 
     private VideoView videoView;
     private ArrayList<Uri> uris;
+    private String location = "";
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
@@ -66,6 +71,25 @@ public class VideoFragment extends Fragment {
             }
         });
 
+        TextView videoTitle = (TextView) view.findViewById(R.id.videoTitle);
+        videoTitle.setText(location);
+
+        View thumbUpButton = view.findViewById(R.id.thumbUp_button);
+        thumbUpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(), "Video liked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        View thumbDownButton = view.findViewById(R.id.thumbDown_button);
+        thumbDownButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(), "Video disliked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return view;
     }
 
@@ -96,5 +120,9 @@ public class VideoFragment extends Fragment {
         if(videoView != null && videoView.isPlaying()) {
             videoView.stopPlayback();
         }
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

@@ -259,9 +259,10 @@ public class MainActivity extends AppCompatActivity
         listFragmentTab.subscribe(this);
     }
 
-    public void playVideos(ArrayList<String> urls) {
+    public void playVideos(ArrayList<String> urls, String location) {
 
         videoFragment.setUris(new ArrayList<Uri>());
+        videoFragment.setLocation(location);
 
         for (String url : urls) {
             videoFragment.getUris().add(Uri.parse(url));

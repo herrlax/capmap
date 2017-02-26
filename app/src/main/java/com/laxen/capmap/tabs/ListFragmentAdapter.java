@@ -50,7 +50,7 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
             public void onClick(View v) {
                 ArrayList<String> urls = new ArrayList<String>();
                 urls.add(videoItem.getUrl());
-                context.playVideos(urls);
+                context.playVideos(urls, videoItem.getLocation());
             }
         });
 

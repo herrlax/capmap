@@ -113,9 +113,9 @@ public class MapFragmentTab extends Fragment
 
             LatLng LOCATION = new LatLng(Double.parseDouble(item.getLatitude()), Double.parseDouble(item.getLongitude()));
             map.addMarker(new MarkerOptions()
-                    //.icon(BitmapDescriptorFactory.fromResource(R.mipmap.capmapicon))
                     .position(LOCATION)
-                    .title(LOCATION.toString())); // sets video url as title for playback
+                    //.title(LOCATION.toString())
+                    .title(item.getLocation())); // sets video url as title for playback
 
             if(markers.get(LOCATION.toString()) == null)
                 markers.put(LOCATION.toString(), new ArrayList<String>());
@@ -128,7 +128,8 @@ public class MapFragmentTab extends Fragment
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        activity.playVideos(markers.get(marker.getTitle()));
+        activity.playVideos(markers.get(marker.getPosition().toString()), marker.getTitle());
+        //activity.playVideos(markers.get(marker.getTitle()), marker.getTitle());
 
         return true;
     }
